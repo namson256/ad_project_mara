@@ -76,7 +76,7 @@ class _LoginViewState extends State<LoginView> {
                       const Icon(Icons.school, size: 56, color: Colors.indigo),
                       const SizedBox(height: 16),
                       const Text(
-                        'Portal Pensyarah',
+                        'Portal Akademik MARA',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22,
