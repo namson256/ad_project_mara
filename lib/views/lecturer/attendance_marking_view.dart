@@ -66,7 +66,7 @@ class AttendanceMarkingView extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Selasa, 26 Mei 2026',
+                        'Semester 25/26',
                         style: TextStyle(
                           color: Colors.grey.shade600,
                           fontSize: 14,
@@ -92,22 +92,7 @@ class AttendanceMarkingView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Papan Pemuka'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF111827),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text('Tanda Kehadiran'),
+                      child: const Text('Kembali'),
                     ),
                   ],
                 ),

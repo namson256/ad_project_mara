@@ -64,16 +64,16 @@ class LecturerShell extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'ScholarTrack',
+                                'Portal Akademik MARA',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
                               SizedBox(height: 2),
                               Text(
-                                'SISTEM KEHADIRAN',
+                                'Pensyarah',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 10,
