@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'firebase_options.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/admin_controller.dart';
 import 'controllers/attendance_controller.dart';
 import 'routing/app_router.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const LecturerPortalApp());
 }
 
@@ -14,20 +20,20 @@ class LecturerPortalApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // We instantiate AuthController + AdminController at the root so they
-    // survive the entire app lifecycle. The router is built once from
-    // AuthController so its `refreshListenable` can react to login/logout.
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => AdminController()),
         ChangeNotifierProvider(create: (_) => AttendanceController()),
       ],
-      // Builder lets us read AuthController from the provider tree
-      // when constructing the router.
       child: Builder(
         builder: (context) {
-          final router = AppRouter(context.read<AuthController>()).router;
+          final authController = context.read<AuthController>();
+
+          // Attempt auto-login from existing Firebase session
+          authController.tryAutoLogin();
+
+          final router = AppRouter(authController).router;
 
           return MaterialApp.router(
             title: 'Portal Pensyarah',

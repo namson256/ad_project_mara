@@ -2,27 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
+import '../models/user_model.dart';
 
-/// Login page with email/password, links to register & forgot password.
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+/// Registration page — user picks name, email, password, and role.
+class RegisterView extends StatefulWidget {
+  const RegisterView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<RegisterView> createState() => _RegisterViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _RegisterViewState extends State<RegisterView> {
   final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
+
+  UserRole _selectedRole = UserRole.pensyarah;
   bool _loading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
   String? _errorMessage;
 
   @override
   void dispose() {
+    _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
+    _confirmPasswordCtrl.dispose();
     super.dispose();
   }
 
@@ -36,9 +44,11 @@ class _LoginViewState extends State<LoginView> {
 
     final auth = context.read<AuthController>();
 
-    final error = await auth.login(
+    final error = await auth.register(
+      name: _nameCtrl.text,
       email: _emailCtrl.text,
       password: _passwordCtrl.text,
+      role: _selectedRole,
     );
 
     if (!mounted) return;
@@ -73,10 +83,11 @@ class _LoginViewState extends State<LoginView> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(Icons.school, size: 56, color: Colors.indigo),
+                      const Icon(Icons.person_add,
+                          size: 56, color: Colors.indigo),
                       const SizedBox(height: 16),
                       const Text(
-                        'Portal Pensyarah',
+                        'Daftar Akaun Baru',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22,
@@ -85,11 +96,29 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Log masuk untuk meneruskan',
+                        'Sila isi maklumat di bawah',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                       const SizedBox(height: 28),
+
+                      // Name
+                      TextFormField(
+                        controller: _nameCtrl,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: const InputDecoration(
+                          labelText: 'Nama Penuh',
+                          prefixIcon: Icon(Icons.person_outline),
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Nama diperlukan';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
                       // Email
                       TextFormField(
@@ -117,7 +146,7 @@ class _LoginViewState extends State<LoginView> {
                         controller: _passwordCtrl,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          labelText: 'Kata laluan',
+                          labelText: 'Kata Laluan',
                           prefixIcon: const Icon(Icons.lock_outline),
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
@@ -132,27 +161,79 @@ class _LoginViewState extends State<LoginView> {
                             },
                           ),
                         ),
-                        validator: (v) => (v == null || v.isEmpty)
-                            ? 'Kata laluan diperlukan'
-                            : null,
-                        onFieldSubmitted: (_) => _submit(),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Kata laluan diperlukan';
+                          }
+                          if (v.length < 6) {
+                            return 'Minimum 6 aksara';
+                          }
+                          return null;
+                        },
                       ),
+                      const SizedBox(height: 16),
 
-                      // Forgot password link
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () => context.go('/forgot-password'),
-                          child: const Text(
-                            'Lupa Kata Laluan?',
-                            style: TextStyle(fontSize: 13),
+                      // Confirm Password
+                      TextFormField(
+                        controller: _confirmPasswordCtrl,
+                        obscureText: _obscureConfirm,
+                        decoration: InputDecoration(
+                          labelText: 'Sahkan Kata Laluan',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirm
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(
+                                  () => _obscureConfirm = !_obscureConfirm);
+                            },
                           ),
                         ),
+                        validator: (v) {
+                          if (v != _passwordCtrl.text) {
+                            return 'Kata laluan tidak sepadan';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Role dropdown
+                      DropdownButtonFormField<UserRole>(
+                        value: _selectedRole,
+                        decoration: const InputDecoration(
+                          labelText: 'Peranan',
+                          prefixIcon: Icon(Icons.badge_outlined),
+                          border: OutlineInputBorder(),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: UserRole.pensyarah,
+                            child: Text('Pensyarah'),
+                          ),
+                          DropdownMenuItem(
+                            value: UserRole.staff,
+                            child: Text('Staff'),
+                          ),
+                          DropdownMenuItem(
+                            value: UserRole.ketuaProgram,
+                            child: Text('Ketua Program'),
+                          ),
+                        ],
+                        onChanged: (role) {
+                          if (role != null) {
+                            setState(() => _selectedRole = role);
+                          }
+                        },
                       ),
 
                       // Error message
                       if (_errorMessage != null) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
@@ -178,9 +259,9 @@ class _LoginViewState extends State<LoginView> {
                         ),
                       ],
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
 
-                      // Login button
+                      // Register button
                       SizedBox(
                         height: 48,
                         child: ElevatedButton(
@@ -202,7 +283,7 @@ class _LoginViewState extends State<LoginView> {
                                   ),
                                 )
                               : const Text(
-                                  'Log Masuk',
+                                  'Daftar',
                                   style: TextStyle(fontSize: 16),
                                 ),
                         ),
@@ -210,18 +291,18 @@ class _LoginViewState extends State<LoginView> {
 
                       const SizedBox(height: 20),
 
-                      // Register link
+                      // Back to login
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Belum ada akaun? ',
+                            'Sudah ada akaun? ',
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           GestureDetector(
-                            onTap: () => context.go('/register'),
+                            onTap: () => context.go('/login'),
                             child: const Text(
-                              'Daftar Sekarang',
+                              'Log Masuk',
                               style: TextStyle(
                                 color: Colors.indigo,
                                 fontWeight: FontWeight.w600,

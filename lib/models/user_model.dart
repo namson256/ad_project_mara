@@ -1,10 +1,12 @@
-/// Defines the two roles available in the portal.
-/// Admins manage lecturer accounts; Lecturers only see their own dashboard.
-enum UserRole { admin, lecturer }
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+/// Three roles in the portal:
+/// - pensyarah  → Lecturer (can mark attendance)
+/// - staff      → Admin/Staff (manages lecturers & system)
+/// - ketuaProgram → Ketua Program / Head of Programme
+enum UserRole { pensyarah, staff, ketuaProgram }
 
 /// Immutable user representation shared between controllers and views.
-/// Keeping this as a plain data class (no Firebase / backend coupling) makes
-/// it easy to swap in a real auth provider later.
 class UserModel {
   final String id;
   final String name;
@@ -19,8 +21,9 @@ class UserModel {
   });
 
   /// Convenience helpers for guards & UI.
-  bool get isAdmin => role == UserRole.admin;
-  bool get isLecturer => role == UserRole.lecturer;
+  bool get isPensyarah => role == UserRole.pensyarah;
+  bool get isStaff => role == UserRole.staff;
+  bool get isKetuaProgram => role == UserRole.ketuaProgram;
 
   /// Useful when you need a tweaked copy (e.g. after editing a profile).
   UserModel copyWith({
@@ -37,7 +40,7 @@ class UserModel {
     );
   }
 
-  /// JSON serialization — handy once you wire this to a real backend.
+  /// JSON serialization.
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
@@ -49,9 +52,44 @@ class UserModel {
         id: json['id'] as String,
         name: json['name'] as String,
         email: json['email'] as String,
-        role: UserRole.values.firstWhere(
-          (r) => r.name == json['role'],
-          orElse: () => UserRole.lecturer,
-        ),
+        role: _parseRole(json['role'] as String),
       );
+
+  /// Create a UserModel from a Firestore document snapshot.
+  factory UserModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return UserModel(
+      id: doc.id,
+      name: data['name'] as String? ?? '',
+      email: data['email'] as String? ?? '',
+      role: _parseRole(data['role'] as String? ?? 'pensyarah'),
+    );
+  }
+
+  /// Parses a role string (handles both camelCase and snake_case from Firestore).
+  static UserRole _parseRole(String roleStr) {
+    switch (roleStr) {
+      case 'pensyarah':
+        return UserRole.pensyarah;
+      case 'staff':
+        return UserRole.staff;
+      case 'ketuaProgram':
+      case 'ketua_program':
+        return UserRole.ketuaProgram;
+      default:
+        return UserRole.pensyarah;
+    }
+  }
+
+  /// Display-friendly role name in Malay.
+  String get roleDisplayName {
+    switch (role) {
+      case UserRole.pensyarah:
+        return 'Pensyarah';
+      case UserRole.staff:
+        return 'Staff';
+      case UserRole.ketuaProgram:
+        return 'Ketua Program';
+    }
+  }
 }

@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../controllers/auth_controller.dart';
 import '../views/login_view.dart';
+import '../views/register_view.dart';
+import '../views/forgot_password_view.dart';
 import '../views/admin/admin_dashboard_view.dart';
 import '../views/lecturer/attendance_marking_view.dart';
 import '../views/lecturer/lecturer_dashboard_view.dart';
+import '../views/ketua/ketua_dashboard_view.dart';
 
 /// AppRouter
 /// ----------------
 /// Centralized go_router configuration with role-based access control.
 ///
-/// Two important details for Flutter Web:
-///   * `refreshListenable` ties the router to AuthController, so when the
-///     user logs in / out the redirect runs automatically and the URL
-///     updates without a manual `context.go()` call.
-///   * `redirect` is the single source of truth for "where am I allowed?".
-///     It runs on every navigation event, including direct URL entry —
-///     which is the main attack vector on web ("just type /admin").
+/// Three roles:
+///   * pensyarah   → /lecturer-dashboard (+ /lecturer-attendance)
+///   * staff       → /admin (admin dashboard)
+///   * ketuaProgram → /ketua-dashboard
+///
+/// Unauthenticated routes: /login, /register, /forgot-password
 class AppRouter {
   final AuthController authController;
 
@@ -27,16 +29,31 @@ class AppRouter {
     refreshListenable: authController,
     redirect: _guard,
     routes: [
+      // --- Unauthenticated routes ---
       GoRoute(
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginView(),
       ),
       GoRoute(
+        path: '/register',
+        name: 'register',
+        builder: (context, state) => const RegisterView(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        name: 'forgot-password',
+        builder: (context, state) => const ForgotPasswordView(),
+      ),
+
+      // --- Staff (admin) routes ---
+      GoRoute(
         path: '/admin',
         name: 'admin',
         builder: (context, state) => const AdminDashboardView(),
       ),
+
+      // --- Pensyarah (lecturer) routes ---
       GoRoute(
         path: '/lecturer-dashboard',
         name: 'lecturer',
@@ -47,6 +64,13 @@ class AppRouter {
         name: 'lecturer-attendance',
         builder: (context, state) => const AttendanceMarkingView(),
       ),
+
+      // --- Ketua Program routes ---
+      GoRoute(
+        path: '/ketua-dashboard',
+        name: 'ketua-dashboard',
+        builder: (context, state) => const KetuaDashboardView(),
+      ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -55,40 +79,57 @@ class AppRouter {
     ),
   );
 
+  /// Pages that don't require authentication.
+  static const _publicPaths = {'/login', '/register', '/forgot-password'};
+
   /// The guard. Returns a path to redirect to, or `null` to allow the
   /// navigation through.
   String? _guard(BuildContext context, GoRouterState state) {
     final loggedIn = authController.isLoggedIn;
-    final goingToLogin = state.matchedLocation == '/login';
+    final currentPath = state.matchedLocation;
+    final isPublicRoute = _publicPaths.contains(currentPath);
 
-    // Not logged in → force them to /login.
+    // Not logged in → allow public routes, redirect everything else to /login.
     if (!loggedIn) {
-      return goingToLogin ? null : '/login';
+      return isPublicRoute ? null : '/login';
     }
 
-    // Logged in but sitting on /login → bounce to their dashboard.
-    if (goingToLogin) {
-      return authController.isAdmin ? '/admin' : '/lecturer-dashboard';
+    // Logged in but on a public route → bounce to their role's dashboard.
+    if (isPublicRoute) {
+      return _dashboardForRole();
     }
 
-    // CRITICAL: Lecturers must never reach /admin, even via direct URL.
-    final isAdminRoute = state.matchedLocation.startsWith('/admin');
-    if (isAdminRoute && authController.isLecturer) {
-      return '/lecturer-dashboard';
+    // --- Role-based access control ---
+
+    // Pensyarah can only access /lecturer-* routes.
+    if (authController.isPensyarah) {
+      if (!currentPath.startsWith('/lecturer')) {
+        return '/lecturer-dashboard';
+      }
     }
 
-    // Symmetric guard: an admin landing on the lecturer dashboard is
-    // probably a stale URL — send them back to /admin.
-    if (state.matchedLocation == '/lecturer-dashboard' &&
-        authController.isAdmin) {
-      return '/admin';
+    // Staff can only access /admin routes.
+    if (authController.isStaff) {
+      if (!currentPath.startsWith('/admin')) {
+        return '/admin';
+      }
     }
 
-    if (state.matchedLocation == '/lecturer-attendance' &&
-        authController.isAdmin) {
-      return '/admin';
+    // Ketua Program can only access /ketua-* routes.
+    if (authController.isKetuaProgram) {
+      if (!currentPath.startsWith('/ketua')) {
+        return '/ketua-dashboard';
+      }
     }
 
     return null; // allowed
+  }
+
+  /// Returns the dashboard path for the current user's role.
+  String _dashboardForRole() {
+    if (authController.isPensyarah) return '/lecturer-dashboard';
+    if (authController.isStaff) return '/admin';
+    if (authController.isKetuaProgram) return '/ketua-dashboard';
+    return '/login'; // fallback
   }
 }

@@ -36,7 +36,7 @@ class AdminController extends ChangeNotifier {
       id: 'lect-${DateTime.now().millisecondsSinceEpoch}',
       name: name.trim(),
       email: normalizedEmail,
-      role: UserRole.lecturer,
+      role: UserRole.pensyarah,
     );
 
     _lecturers.add(newLecturer);
@@ -53,7 +53,7 @@ class AdminController extends ChangeNotifier {
         id: '',
         name: '',
         email: '',
-        role: UserRole.lecturer,
+        role: UserRole.pensyarah,
       ),
     );
     if (lecturer.id.isEmpty) return;
@@ -87,7 +87,7 @@ class AdminController extends ChangeNotifier {
         id: 'lect-demo-001',
         name: 'Pensyarah Demo',
         email: demoEmail,
-        role: UserRole.lecturer,
+        role: UserRole.pensyarah,
       ),
     );
     _passwords[demoEmail] = 'lecturer123';
