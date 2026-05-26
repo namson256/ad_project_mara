@@ -48,7 +48,7 @@ class _LoginViewState extends State<LoginView> {
     setState(() => _loading = false);
 
     if (!ok) {
-      setState(() => _errorMessage = 'Invalid email or password.');
+      setState(() => _errorMessage = 'E-mel atau kata laluan tidak sah.');
     }
     // On success the router's redirect handles navigation automatically.
   }
@@ -78,7 +78,7 @@ class _LoginViewState extends State<LoginView> {
                       const Icon(Icons.school, size: 56, color: Colors.indigo),
                       const SizedBox(height: 16),
                       const Text(
-                        'Lecturer Portal',
+                        'Portal Pensyarah',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22,
@@ -87,7 +87,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Sign in to continue',
+                        'Log masuk untuk meneruskan',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.grey[600]),
                       ),
@@ -96,15 +96,17 @@ class _LoginViewState extends State<LoginView> {
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(
-                          labelText: 'Email',
+                          labelText: 'E-mel',
                           prefixIcon: Icon(Icons.email_outlined),
                           border: OutlineInputBorder(),
                         ),
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) {
-                            return 'Email is required';
+                            return 'E-mel diperlukan';
                           }
-                          if (!v.contains('@')) return 'Enter a valid email';
+                          if (!v.contains('@')) {
+                            return 'Masukkan e-mel yang sah';
+                          }
                           return null;
                         },
                       ),
@@ -113,12 +115,13 @@ class _LoginViewState extends State<LoginView> {
                         controller: _passwordCtrl,
                         obscureText: true,
                         decoration: const InputDecoration(
-                          labelText: 'Password',
+                          labelText: 'Kata laluan',
                           prefixIcon: Icon(Icons.lock_outline),
                           border: OutlineInputBorder(),
                         ),
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Password is required' : null,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Kata laluan diperlukan'
+                            : null,
                         onFieldSubmitted: (_) => _submit(),
                       ),
                       if (_errorMessage != null) ...[
@@ -151,14 +154,23 @@ class _LoginViewState extends State<LoginView> {
                                   ),
                                 )
                               : const Text(
-                                  'Sign In',
+                                  'Log Masuk',
                                   style: TextStyle(fontSize: 16),
                                 ),
                         ),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Demo admin: admin@portal.com / admin123',
+                        'Akaun demo pentadbir: admin@portal.com / admin123',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Akaun demo pensyarah: lecturer@portal.com / lecturer123',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,

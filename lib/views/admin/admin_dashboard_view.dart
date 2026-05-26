@@ -28,7 +28,7 @@ class AdminDashboardView extends StatelessWidget {
       appBar: isWide
           ? null
           : AppBar(
-              title: const Text('Admin Dashboard'),
+              title: const Text('Papan Pemuka Pentadbir'),
               backgroundColor: Colors.indigo,
               foregroundColor: Colors.white,
             ),
@@ -53,7 +53,7 @@ class AdminDashboardView extends StatelessWidget {
                   children: [
                     if (isWide) ...[
                       const Text(
-                        'Admin Dashboard',
+                        'Papan Pemuka Pentadbir',
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w600,
@@ -61,7 +61,7 @@ class AdminDashboardView extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Manage lecturer accounts',
+                        'Urus akaun pensyarah',
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                       const SizedBox(height: 24),
@@ -112,12 +112,12 @@ class _Sidebar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 32, 20, 16),
           child: Row(
             children: [
-              const Icon(Icons.school, color: Colors.white, size: 28),
-              const SizedBox(width: 12),
+              Icon(Icons.school, color: Colors.white, size: 28),
+              SizedBox(width: 12),
               Text(
                 'Portal',
                 style: TextStyle(
@@ -133,18 +133,18 @@ class _Sidebar extends StatelessWidget {
         const SizedBox(height: 8),
         _SidebarTile(
           icon: Icons.dashboard_outlined,
-          label: 'Dashboard',
+          label: 'Papan Pemuka',
           selected: true,
           onTap: () {},
         ),
         _SidebarTile(
           icon: Icons.people_outline,
-          label: 'Lecturers',
+          label: 'Pensyarah',
           onTap: () {},
         ),
         _SidebarTile(
           icon: Icons.settings_outlined,
-          label: 'Settings',
+          label: 'Tetapan',
           onTap: () {},
         ),
         const Spacer(),
@@ -171,7 +171,7 @@ class _Sidebar extends StatelessWidget {
         ),
         _SidebarTile(
           icon: Icons.logout,
-          label: 'Logout',
+          label: 'Log keluar',
           onTap: () {
             context.read<AuthController>().logout();
             // Router's redirect will catch this and route to /login.
@@ -203,7 +203,7 @@ class _SidebarTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        color: selected ? Colors.white.withOpacity(0.1) : null,
+        color: selected ? Colors.white.withValues(alpha: 0.1) : null,
         child: Row(
           children: [
             Icon(icon, color: Colors.white, size: 20),
@@ -262,12 +262,12 @@ class _AddLecturerCardState extends State<_AddLecturerCard> {
       _emailCtrl.clear();
       _passwordCtrl.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lecturer added successfully')),
+        const SnackBar(content: Text('Pensyarah berjaya ditambah')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('A lecturer with this email already exists'),
+          content: Text('Pensyarah dengan e-mel ini sudah wujud'),
           backgroundColor: Colors.red,
         ),
       );
@@ -287,37 +287,37 @@ class _AddLecturerCardState extends State<_AddLecturerCard> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Add New Lecturer',
+                'Tambah Pensyarah Baharu',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 4),
               Text(
-                'Create a new lecturer account',
+                'Cipta akaun pensyarah baharu',
                 style: TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(
-                  labelText: 'Full name',
+                  labelText: 'Nama penuh',
                   prefixIcon: Icon(Icons.person_outline),
                   border: OutlineInputBorder(),
                 ),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'E-mel',
                   prefixIcon: Icon(Icons.email_outlined),
                   border: OutlineInputBorder(),
                 ),
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Required';
-                  if (!v.contains('@')) return 'Enter a valid email';
+                  if (v == null || v.trim().isEmpty) return 'Wajib diisi';
+                  if (!v.contains('@')) return 'Masukkan e-mel yang sah';
                   return null;
                 },
               ),
@@ -326,13 +326,13 @@ class _AddLecturerCardState extends State<_AddLecturerCard> {
                 controller: _passwordCtrl,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'Temporary password',
+                  labelText: 'Kata laluan sementara',
                   prefixIcon: Icon(Icons.lock_outline),
                   border: OutlineInputBorder(),
                 ),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Required';
-                  if (v.length < 6) return 'Min 6 characters';
+                  if (v == null || v.isEmpty) return 'Wajib diisi';
+                  if (v.length < 6) return 'Sekurang-kurangnya 6 aksara';
                   return null;
                 },
               ),
@@ -342,7 +342,7 @@ class _AddLecturerCardState extends State<_AddLecturerCard> {
                 child: ElevatedButton.icon(
                   onPressed: _submit,
                   icon: const Icon(Icons.add),
-                  label: const Text('Create Lecturer'),
+                  label: const Text('Cipta Pensyarah'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo,
                     foregroundColor: Colors.white,
@@ -383,7 +383,7 @@ class _LecturersListCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Lecturers',
+                  'Pensyarah',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 Chip(
@@ -403,7 +403,7 @@ class _LecturersListCard extends StatelessWidget {
                         size: 48, color: Colors.grey[400]),
                     const SizedBox(height: 12),
                     Text(
-                      'No lecturers yet',
+                      'Belum ada pensyarah',
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                   ],
@@ -431,7 +431,7 @@ class _LecturersListCard extends StatelessWidget {
                     trailing: IconButton(
                       icon: const Icon(Icons.delete_outline,
                           color: Colors.redAccent),
-                      tooltip: 'Remove',
+                      tooltip: 'Buang',
                       onPressed: () =>
                           context.read<AdminController>().removeLecturer(l.id),
                     ),

@@ -11,6 +11,10 @@ class AdminController extends ChangeNotifier {
   final List<UserModel> _lecturers = [];
   final Map<String, String> _passwords = {}; // email -> password
 
+  AdminController() {
+    _seedDemoLecturer();
+  }
+
   /// Read-only view for the UI.
   List<UserModel> get lecturers => List.unmodifiable(_lecturers);
 
@@ -72,5 +76,20 @@ class AdminController extends ChangeNotifier {
     } catch (_) {
       return null;
     }
+  }
+
+  void _seedDemoLecturer() {
+    const demoEmail = 'lecturer@portal.com';
+    if (_passwords.containsKey(demoEmail)) return;
+
+    _lecturers.add(
+      const UserModel(
+        id: 'lect-demo-001',
+        name: 'Pensyarah Demo',
+        email: demoEmail,
+        role: UserRole.lecturer,
+      ),
+    );
+    _passwords[demoEmail] = 'lecturer123';
   }
 }

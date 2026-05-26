@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/admin_controller.dart';
+import 'controllers/attendance_controller.dart';
 import 'routing/app_router.dart';
 
 void main() {
@@ -20,6 +21,7 @@ class LecturerPortalApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => AdminController()),
+        ChangeNotifierProvider(create: (_) => AttendanceController()),
       ],
       // Builder lets us read AuthController from the provider tree
       // when constructing the router.
@@ -28,7 +30,7 @@ class LecturerPortalApp extends StatelessWidget {
           final router = AppRouter(context.read<AuthController>()).router;
 
           return MaterialApp.router(
-            title: 'Lecturer Portal',
+            title: 'Portal Pensyarah',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               primarySwatch: Colors.indigo,

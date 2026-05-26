@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../controllers/auth_controller.dart';
 import '../views/login_view.dart';
 import '../views/admin/admin_dashboard_view.dart';
+import '../views/lecturer/attendance_marking_view.dart';
 import '../views/lecturer/lecturer_dashboard_view.dart';
 
 /// AppRouter
@@ -41,10 +42,15 @@ class AppRouter {
         name: 'lecturer',
         builder: (context, state) => const LecturerDashboardView(),
       ),
+      GoRoute(
+        path: '/lecturer-attendance',
+        name: 'lecturer-attendance',
+        builder: (context, state) => const AttendanceMarkingView(),
+      ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
-        child: Text('Route not found: ${state.uri}'),
+        child: Text('Laluan tidak ditemui: ${state.uri}'),
       ),
     ),
   );
@@ -74,6 +80,11 @@ class AppRouter {
     // Symmetric guard: an admin landing on the lecturer dashboard is
     // probably a stale URL — send them back to /admin.
     if (state.matchedLocation == '/lecturer-dashboard' &&
+        authController.isAdmin) {
+      return '/admin';
+    }
+
+    if (state.matchedLocation == '/lecturer-attendance' &&
         authController.isAdmin) {
       return '/admin';
     }
