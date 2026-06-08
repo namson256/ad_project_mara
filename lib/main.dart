@@ -5,6 +5,8 @@ import 'firebase_options.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/admin_controller.dart';
 import 'controllers/attendance_controller.dart';
+import 'controllers/timetable_controller.dart';
+import 'controllers/course_controller.dart';
 import 'routing/app_router.dart';
 
 void main() async {
@@ -25,6 +27,8 @@ class LecturerPortalApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => AdminController()),
         ChangeNotifierProvider(create: (_) => AttendanceController()),
+        ChangeNotifierProvider(create: (_) => TimetableController()),
+        ChangeNotifierProvider(create: (_) => CourseController()),
       ],
       child: Builder(
         builder: (context) {

@@ -8,6 +8,9 @@ import '../views/admin/admin_dashboard_view.dart';
 import '../views/lecturer/attendance_marking_view.dart';
 import '../views/lecturer/lecturer_dashboard_view.dart';
 import '../views/ketua/ketua_dashboard_view.dart';
+import '../views/timetable_views.dart';
+import '../views/senarai_kursus_view.dart';
+import '../views/admin/urus_pengguna_view.dart';
 
 /// AppRouter
 /// ----------------
@@ -70,6 +73,28 @@ class AppRouter {
         path: '/ketua-dashboard',
         name: 'ketua-dashboard',
         builder: (context, state) => const KetuaDashboardView(),
+      ),
+
+      // --- Timetable routes (Woo Cheng Shuan) ---
+      GoRoute(
+        path: '/admin/muat-naik-jadual',
+        name: 'upload-schedule',
+        builder: (context, state) => const UploadTimeScheduleView(),
+      ),
+      GoRoute(
+        path: '/admin/jadual',
+        name: 'admin-timetable',
+        builder: (context, state) => const ShowTimetableSlotView(),
+      ),
+      GoRoute(
+        path: '/admin/senarai-kursus',
+        name: 'senarai-kursus',
+        builder: (context, state) => const SenaraiKursusView(),
+      ),
+      GoRoute(
+        path: '/admin/urus-pengguna',
+        name: 'urus-pengguna',
+        builder: (context, state) => const UrusPenggunaView(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
