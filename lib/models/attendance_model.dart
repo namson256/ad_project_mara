@@ -8,7 +8,7 @@ extension AttendanceStatusLabel on AttendanceStatus {
       case AttendanceStatus.lewat:
         return 'Lewat';
       case AttendanceStatus.tidakHadir:
-        return 'Tidak Hadir';
+        return 'TH';
       case AttendanceStatus.mc:
         return 'MC';
       case AttendanceStatus.ck:
@@ -42,6 +42,37 @@ class AttendanceStudent {
       id: id ?? this.id,
       name: name ?? this.name,
       weeklyStatus: weeklyStatus ?? this.weeklyStatus,
+      totalWeeks: totalWeeks,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'weeklyStatus': weeklyStatus.map(
+        (key, value) => MapEntry(key.toString(), value.name),
+      ),
+    };
+  }
+
+  factory AttendanceStudent.fromMap(Map<String, dynamic> map, {int totalWeeks = 18}) {
+    final statusMap = map['weeklyStatus'] as Map<String, dynamic>? ?? {};
+    final parsedStatus = <int, AttendanceStatus>{};
+    statusMap.forEach((key, value) {
+      final week = int.tryParse(key);
+      if (week != null) {
+        parsedStatus[week] = AttendanceStatus.values.firstWhere(
+          (e) => e.name == value,
+          orElse: () => AttendanceStatus.hadir,
+        );
+      }
+    });
+
+    return AttendanceStudent(
+      id: map['id'] ?? '',
+      name: map['name'] ?? '',
+      weeklyStatus: parsedStatus,
       totalWeeks: totalWeeks,
     );
   }

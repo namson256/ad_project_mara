@@ -54,8 +54,11 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      body: Center(
+      body: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1B3A72),
+        ),
+        child: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
@@ -73,7 +76,7 @@ class _LoginViewState extends State<LoginView> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(Icons.school, size: 56, color: Colors.indigo),
+                      const Icon(Icons.school, size: 56, color: Colors.purple),
                       const SizedBox(height: 16),
                       const Text(
                         'Portal Akademik MARA',
@@ -186,7 +189,7 @@ class _LoginViewState extends State<LoginView> {
                         child: ElevatedButton(
                           onPressed: _loading ? null : _submit,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo,
+                            backgroundColor: Colors.purple,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -223,7 +226,7 @@ class _LoginViewState extends State<LoginView> {
                             child: const Text(
                               'Daftar Sekarang',
                               style: TextStyle(
-                                color: Colors.indigo,
+                                color: Colors.purple,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -236,6 +239,7 @@ class _LoginViewState extends State<LoginView> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );
