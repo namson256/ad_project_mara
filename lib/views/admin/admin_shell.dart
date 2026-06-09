@@ -122,18 +122,18 @@ class AdminShell extends StatelessWidget {
                 ),
 
                 // LAPORAN
-                const _Label('LAPORAN'),
+                const _Label('PELAPORAN'),
                 _Item(
                   icon: Icons.bar_chart_outlined,
                   label: 'Modul Pelaporan',
-                  selected: false,
-                  onTap: () {},
+                  selected: currentRoute == '/admin/pelaporan',
+                  onTap: () => context.go('/admin/pelaporan'),
                 ),
                 _Item(
                   icon: Icons.warning_amber_outlined,
                   label: 'Isu Disiplin',
-                  selected: false,
-                  onTap: () {},
+                  selected: currentRoute == '/admin/isu-disiplin',
+                  onTap: () => context.go('/admin/isu-disiplin'),
                 ),
 
                 // SISTEM

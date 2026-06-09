@@ -11,6 +11,8 @@ import '../views/ketua/ketua_dashboard_view.dart';
 import '../views/timetable_views.dart';
 import '../views/senarai_kursus_view.dart';
 import '../views/admin/urus_pengguna_view.dart';
+import '../views/laporan/pelaporan_view.dart';
+import '../views/laporan/isu_disiplin_view.dart';
 
 /// AppRouter
 /// ----------------
@@ -55,6 +57,16 @@ class AppRouter {
         name: 'admin',
         builder: (context, state) => const AdminDashboardView(),
       ),
+      GoRoute(
+        path: '/admin/pelaporan',
+        name: 'admin-pelaporan',
+        builder: (context, state) => const PelaporanView(),
+      ),
+      GoRoute(
+        path: '/admin/isu-disiplin',
+        name: 'admin-isu-disiplin',
+        builder: (context, state) => const IsuDisiplinView(),
+      ),
 
       // --- Pensyarah (lecturer) routes ---
       GoRoute(
@@ -67,12 +79,32 @@ class AppRouter {
         name: 'lecturer-attendance',
         builder: (context, state) => const AttendanceMarkingView(),
       ),
+      GoRoute(
+        path: '/lecturer-pelaporan',
+        name: 'lecturer-pelaporan',
+        builder: (context, state) => const PelaporanView(),
+      ),
+      GoRoute(
+        path: '/lecturer-isu-disiplin',
+        name: 'lecturer-isu-disiplin',
+        builder: (context, state) => const IsuDisiplinView(),
+      ),
 
       // --- Ketua Program routes ---
       GoRoute(
         path: '/ketua-dashboard',
         name: 'ketua-dashboard',
         builder: (context, state) => const KetuaDashboardView(),
+      ),
+      GoRoute(
+        path: '/ketua-pelaporan',
+        name: 'ketua-pelaporan',
+        builder: (context, state) => const PelaporanView(),
+      ),
+      GoRoute(
+        path: '/ketua-isu-disiplin',
+        name: 'ketua-isu-disiplin',
+        builder: (context, state) => const IsuDisiplinView(),
       ),
 
       // --- Timetable routes (Woo Cheng Shuan) ---
