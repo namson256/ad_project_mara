@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import '../../controllers/auth_controller.dart';
 
-class LecturerShell extends StatelessWidget {
+class KetuaShell extends StatelessWidget {
   final String currentRoute;
   final Widget child;
 
-  const LecturerShell({
+  const KetuaShell({
     super.key,
     required this.currentRoute,
     required this.child,
   });
 
-  static const Color _sidebarBg = Color(0xFF10162E);
-  static const Color _sidebarCard = Color(0xFF1A2344);
+  static const Color _bg = Color(0xFF10162E);
+  static const Color _card = Color(0xFF1A2344);
   static const Color _accent = Color(0xFF4F5BD5);
 
   @override
@@ -26,61 +25,51 @@ class LecturerShell extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F7FA),
       body: Row(
         children: [
+          // ── Sidebar ──────────────────────────────────────────────────
           Container(
             width: 248,
-            color: _sidebarBg,
+            color: _bg,
             child: Column(
               children: [
+                // Brand
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
+                        horizontal: 14, vertical: 14),
                     decoration: BoxDecoration(
-                      color: _sidebarCard,
+                      color: _card,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
                       children: [
                         Container(
-                          height: 42,
-                          width: 42,
+                          height: 42, width: 42,
                           decoration: BoxDecoration(
                             color: _accent,
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: const Icon(
-                            Icons.school_outlined,
-                            color: Colors.white,
-                            size: 24,
-                          ),
+                          child: const Icon(Icons.school_outlined,
+                              color: Colors.white, size: 24),
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Portal Akademik MARA',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
+                              Text('Portal Akademik MARA',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800)),
                               SizedBox(height: 2),
-                              Text(
-                                'Pensyarah',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 10,
-                                  letterSpacing: 1.1,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                              Text('KETUA PROGRAM',
+                                  style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 10,
+                                      letterSpacing: 1.1,
+                                      fontWeight: FontWeight.w700)),
                             ],
                           ),
                         ),
@@ -88,54 +77,41 @@ class LecturerShell extends StatelessWidget {
                     ),
                   ),
                 ),
-                const _SectionLabel(label: 'UMUM'),
-                _NavItem(
+
+                // OVERVIEW
+                const _Label('GAMBARAN KESELURUHAN'),
+                _Item(
                   icon: Icons.dashboard_outlined,
                   label: 'Papan Pemuka',
-                  selected: currentRoute == '/lecturer-dashboard',
-                  onTap: () => context.go('/lecturer-dashboard'),
+                  selected: currentRoute == '/ketua-dashboard',
+                  onTap: () => context.go('/ketua-dashboard'),
                 ),
-                const _SectionLabel(label: 'KEHADIRAN'),
-                _NavItem(
-                  icon: Icons.fact_check_outlined,
-                  label: 'Tanda Kehadiran',
-                  selected: currentRoute == '/lecturer-attendance',
-                  onTap: () => context.go('/lecturer-attendance'),
-                ),
-                const _SectionLabel(label: 'PELAPORAN'),
-                _NavItem(
+
+                // LAPORAN
+                const _Label('PELAPORAN'),
+                _Item(
                   icon: Icons.bar_chart_outlined,
                   label: 'Modul Pelaporan',
-                  selected: currentRoute == '/lecturer-pelaporan',
-                  onTap: () => context.go('/lecturer-pelaporan'),
+                  selected: currentRoute == '/ketua-pelaporan',
+                  onTap: () => context.go('/ketua-pelaporan'),
                 ),
-                _NavItem(
+                _Item(
                   icon: Icons.warning_amber_outlined,
                   label: 'Isu Disiplin',
-                  selected: currentRoute == '/lecturer-isu-disiplin',
-                  onTap: () => context.go('/lecturer-isu-disiplin'),
+                  selected: currentRoute == '/ketua-isu-disiplin',
+                  onTap: () => context.go('/ketua-isu-disiplin'),
                 ),
-                const _SectionLabel(label: 'JADUAL'),
-                _NavItem(
-                  icon: Icons.calendar_month_outlined,
-                  label: 'Slot Jadual',
-                  selected: false,
-                  onTap: () => context.go('/lecturer-dashboard'),
-                ),
-                _NavItem(
-                  icon: Icons.event_available_outlined,
-                  label: 'Tempahan',
-                  selected: false,
-                  onTap: () => context.go('/lecturer-dashboard'),
-                ),
+
                 const Spacer(),
+
+                // User card
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
                     decoration: BoxDecoration(
-                      color: _sidebarCard,
+                      color: _card,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -149,11 +125,10 @@ class LecturerShell extends StatelessWidget {
                               child: Text(
                                 auth.currentUser?.name.isNotEmpty == true
                                     ? auth.currentUser!.name[0].toUpperCase()
-                                    : 'P',
+                                    : 'K',
                                 style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -162,24 +137,20 @@ class LecturerShell extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    auth.currentUser?.name ?? 'Pensyarah Demo',
+                                    auth.currentUser?.name ?? 'Ketua Program',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700),
                                   ),
-                                  const SizedBox(height: 2),
                                   Text(
                                     auth.currentUser?.email ?? '',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 11,
-                                    ),
+                                        color: Colors.white70, fontSize: 11),
                                   ),
                                 ],
                               ),
@@ -194,12 +165,12 @@ class LecturerShell extends StatelessWidget {
                           },
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            minimumSize: const Size.fromHeight(40),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            minimumSize: const Size.fromHeight(36),
                             alignment: Alignment.centerLeft,
                           ),
-                          icon: const Icon(Icons.logout, size: 18),
-                          label: const Text('Log keluar'),
+                          icon: const Icon(Icons.logout, size: 16),
+                          label: const Text('Log Keluar'),
                         ),
                       ],
                     ),
@@ -208,6 +179,8 @@ class LecturerShell extends StatelessWidget {
               ],
             ),
           ),
+
+          // Main content
           Expanded(child: child),
         ],
       ),
@@ -215,35 +188,29 @@ class LecturerShell extends StatelessWidget {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  final String label;
-
-  const _SectionLabel({required this.label});
-
+class _Label extends StatelessWidget {
+  final String text;
+  const _Label(this.text);
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 10, 18, 6),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Color(0xFF8792C0),
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.1,
-        ),
-      ),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 4),
+      child: Text(text,
+          style: const TextStyle(
+              color: Color(0xFF8792C0),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.1)),
     );
   }
 }
 
-class _NavItem extends StatelessWidget {
+class _Item extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
-
-  const _NavItem({
+  const _Item({
     required this.icon,
     required this.label,
     required this.selected,
@@ -253,7 +220,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       child: Material(
         color: selected ? const Color(0xFF2C3767) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
@@ -261,27 +228,25 @@ class _NavItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  color: selected ? Colors.white : Colors.white70,
-                  size: 20,
-                ),
-                const SizedBox(width: 14),
+                Icon(icon,
+                    color: selected ? Colors.white : Colors.white70,
+                    size: 19),
+                const SizedBox(width: 13),
                 Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: selected ? Colors.white : Colors.white70,
-                      fontSize: 14,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                    ),
-                  ),
+                  child: Text(label,
+                      style: TextStyle(
+                          color: selected ? Colors.white : Colors.white70,
+                          fontSize: 13,
+                          fontWeight: selected
+                              ? FontWeight.w700
+                              : FontWeight.w400)),
                 ),
                 if (selected)
-                  const Icon(Icons.circle, color: Color(0xFF5C6BFF), size: 8),
+                  const Icon(Icons.circle,
+                      color: Color(0xFF5C6BFF), size: 7),
               ],
             ),
           ),

@@ -52,7 +52,7 @@ class LecturerDashboardView extends StatelessWidget {
                   runSpacing: 12,
                   children: [
                     OutlinedButton(
-                      onPressed: () => context.go('/lecturer-attendance'),
+                      onPressed: () => context.go('/lecturer-pelaporan'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF111827),
                         backgroundColor: Colors.white,
@@ -64,7 +64,7 @@ class LecturerDashboardView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Laporan'),
+                      child: const Text('Pelaporan'),
                     ),
                     ElevatedButton(
                       onPressed: () => context.go('/lecturer-attendance'),
@@ -177,15 +177,30 @@ class LecturerDashboardView extends StatelessWidget {
                     ),
                     SizedBox(
                       width: rightWidth,
-                      child: const _PanelCard(
+                      child: _PanelCard(
                         title: 'Tindakan Pantas',
                         child: Column(
                           children: [
-                            _QuickActionButton(label: 'Tanda kehadiran'),
-                            _QuickActionButton(label: 'Lapor isu disiplin'),
-                            _QuickActionButton(label: 'Lihat jadual saya'),
-                            _QuickActionButton(label: 'Tempah kelas ganti'),
-                            _QuickActionButton(label: 'Lihat laporan'),
+                            _QuickActionButton(
+                              label: 'Tanda kehadiran',
+                              onTap: () => context.go('/lecturer-attendance'),
+                            ),
+                            _QuickActionButton(
+                              label: 'Lapor isu disiplin',
+                              onTap: () => context.go('/lecturer-isu-disiplin'),
+                            ),
+                            _QuickActionButton(
+                              label: 'Lihat jadual saya',
+                              onTap: () => context.go('/lecturer-dashboard'),
+                            ),
+                            _QuickActionButton(
+                              label: 'Tempah kelas ganti',
+                              onTap: () => context.go('/lecturer-dashboard'),
+                            ),
+                            _QuickActionButton(
+                              label: 'Lihat laporan',
+                              onTap: () => context.go('/lecturer-pelaporan'),
+                            ),
                           ],
                         ),
                       ),
@@ -378,15 +393,16 @@ class _PanelCard extends StatelessWidget {
 
 class _QuickActionButton extends StatelessWidget {
   final String label;
+  final VoidCallback? onTap;
 
-  const _QuickActionButton({required this.label});
+  const _QuickActionButton({required this.label, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: OutlinedButton(
-        onPressed: () {},
+        onPressed: onTap,
         style: OutlinedButton.styleFrom(
           foregroundColor: const Color(0xFF111827),
           backgroundColor: Colors.white,
