@@ -82,70 +82,78 @@ class AdminShell extends StatelessWidget {
                   ),
                 ),
 
-                // OVERVIEW
-                const _Label('GAMBARAN KESELURUHAN'),
-                _Item(
-                  icon: Icons.dashboard_outlined,
-                  label: 'Papan Pemuka Admin',
-                  selected: currentRoute == '/admin',
-                  onTap: () => context.go('/admin'),
-                ),
+                // Nav items — scrollable so they never overflow
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // OVERVIEW
+                        const _Label('GAMBARAN KESELURUHAN'),
+                        _Item(
+                          icon: Icons.dashboard_outlined,
+                          label: 'Papan Pemuka Admin',
+                          selected: currentRoute == '/admin',
+                          onTap: () => context.go('/admin'),
+                        ),
 
-                // PENGURUSAN
-                const _Label('PENGURUSAN'),
-                _Item(
-                  icon: Icons.people_outline,
-                  label: 'Urus Pengguna',
-                  selected: currentRoute == '/admin/urus-pengguna',
-                  onTap: () => context.go('/admin/urus-pengguna'),
-                ),
-                _Item(
-                  icon: Icons.menu_book_outlined,
-                  label: 'Senarai Kursus',
-                  selected: currentRoute == '/admin/senarai-kursus',
-                  onTap: () => context.go('/admin/senarai-kursus'),
-                ),
+                        // PENGURUSAN
+                        const _Label('PENGURUSAN'),
+                        _Item(
+                          icon: Icons.people_outline,
+                          label: 'Urus Pengguna',
+                          selected: currentRoute == '/admin/urus-pengguna',
+                          onTap: () => context.go('/admin/urus-pengguna'),
+                        ),
+                        _Item(
+                          icon: Icons.menu_book_outlined,
+                          label: 'Senarai Kursus',
+                          selected: currentRoute == '/admin/senarai-kursus',
+                          onTap: () => context.go('/admin/senarai-kursus'),
+                        ),
 
-                // PENJADUALAN
-                const _Label('PENJADUALAN'),
-                _Item(
-                  icon: Icons.upload_outlined,
-                  label: 'Muat Naik Jadual',
-                  selected: currentRoute == '/admin/muat-naik-jadual',
-                  onTap: () => context.go('/admin/muat-naik-jadual'),
-                ),
-                _Item(
-                  icon: Icons.calendar_month_outlined,
-                  label: 'Slot Jadual Waktu',
-                  selected: currentRoute == '/admin/jadual',
-                  onTap: () => context.go('/admin/jadual'),
-                ),
+                        // PENJADUALAN
+                        const _Label('PENJADUALAN'),
+                        _Item(
+                          icon: Icons.upload_outlined,
+                          label: 'Muat Naik Jadual',
+                          selected: currentRoute == '/admin/muat-naik-jadual',
+                          onTap: () => context.go('/admin/muat-naik-jadual'),
+                        ),
+                        _Item(
+                          icon: Icons.calendar_month_outlined,
+                          label: 'Slot Jadual Waktu',
+                          selected: currentRoute == '/admin/jadual',
+                          onTap: () => context.go('/admin/jadual'),
+                        ),
 
-                // LAPORAN
-                const _Label('PELAPORAN'),
-                _Item(
-                  icon: Icons.bar_chart_outlined,
-                  label: 'Modul Pelaporan',
-                  selected: currentRoute == '/admin/pelaporan',
-                  onTap: () => context.go('/admin/pelaporan'),
-                ),
-                _Item(
-                  icon: Icons.warning_amber_outlined,
-                  label: 'Isu Disiplin',
-                  selected: currentRoute == '/admin/isu-disiplin',
-                  onTap: () => context.go('/admin/isu-disiplin'),
-                ),
+                        // LAPORAN
+                        const _Label('PELAPORAN'),
+                        _Item(
+                          icon: Icons.bar_chart_outlined,
+                          label: 'Modul Pelaporan',
+                          selected: currentRoute == '/admin/pelaporan',
+                          onTap: () => context.go('/admin/pelaporan'),
+                        ),
+                        _Item(
+                          icon: Icons.warning_amber_outlined,
+                          label: 'Isu Disiplin',
+                          selected: currentRoute == '/admin/isu-disiplin',
+                          onTap: () => context.go('/admin/isu-disiplin'),
+                        ),
 
-                // SISTEM
-                const _Label('SISTEM'),
-                _Item(
-                  icon: Icons.lock_outline,
-                  label: 'Pengesahan',
-                  selected: false,
-                  onTap: () {},
+                        // SISTEM
+                        const _Label('SISTEM'),
+                        _Item(
+                          icon: Icons.lock_outline,
+                          label: 'Pengesahan',
+                          selected: false,
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-
-                const Spacer(),
 
                 // User card
                 Padding(
