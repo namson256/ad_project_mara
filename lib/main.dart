@@ -42,7 +42,7 @@ class LecturerPortalApp extends StatelessWidget {
           final router = AppRouter(authController).router;
 
           return MaterialApp.router(
-            title: 'Portal Pensyarah',
+            title: 'Portal Akademik MARA',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               primarySwatch: Colors.indigo,

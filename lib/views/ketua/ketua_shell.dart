@@ -13,8 +13,8 @@ class KetuaShell extends StatelessWidget {
     required this.child,
   });
 
-  static const Color _bg = Color(0xFF10162E);
-  static const Color _card = Color(0xFF1A2344);
+  static const Color _bg     = Color(0xFF10162E);
+  static const Color _card   = Color(0xFF1A2344);
   static const Color _accent = Color(0xFF4F5BD5);
 
   @override
@@ -58,7 +58,7 @@ class KetuaShell extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Portal Akademik MARA',
+                              Text('Portal Ketua Jabatan',
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 13,
@@ -78,33 +78,50 @@ class KetuaShell extends StatelessWidget {
                   ),
                 ),
 
-                // OVERVIEW
-                const _Label('GAMBARAN KESELURUHAN'),
-                _Item(
-                  icon: Icons.dashboard_outlined,
-                  label: 'Papan Pemuka',
-                  selected: currentRoute == '/ketua-dashboard',
-                  onTap: () => context.go('/ketua-dashboard'),
+                // Nav items — scrollable so they never overflow
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // GAMBARAN KESELURUHAN
+                        const _Label('GAMBARAN KESELURUHAN'),
+                        _Item(
+                          icon: Icons.dashboard_outlined,
+                          label: 'Papan Pemuka',
+                          selected: currentRoute == '/ketua-dashboard',
+                          onTap: () => context.go('/ketua-dashboard'),
+                        ),
+
+                        // PELAPORAN
+                        const _Label('PELAPORAN'),
+                        _Item(
+                          icon: Icons.bar_chart_outlined,
+                          label: 'Modul Pelaporan',
+                          selected: currentRoute == '/ketua-pelaporan',
+                          onTap: () => context.go('/ketua-pelaporan'),
+                        ),
+                        _Item(
+                          icon: Icons.warning_amber_outlined,
+                          label: 'Isu Disiplin',
+                          selected: currentRoute == '/ketua-isu-disiplin',
+                          onTap: () => context.go('/ketua-isu-disiplin'),
+                        ),
+
+                        // SISTEM
+                        const _Label('SISTEM'),
+                        _Item(
+                          icon: Icons.lock_outline,
+                          label: 'Pengesahan',
+                          selected: false,
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
 
-                // LAPORAN
-                const _Label('PELAPORAN'),
-                _Item(
-                  icon: Icons.bar_chart_outlined,
-                  label: 'Modul Pelaporan',
-                  selected: currentRoute == '/ketua-pelaporan',
-                  onTap: () => context.go('/ketua-pelaporan'),
-                ),
-                _Item(
-                  icon: Icons.warning_amber_outlined,
-                  label: 'Isu Disiplin',
-                  selected: currentRoute == '/ketua-isu-disiplin',
-                  onTap: () => context.go('/ketua-isu-disiplin'),
-                ),
-
-                const Spacer(),
-
-                // User card
+                // User card — pinned at bottom
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Container(
@@ -180,13 +197,15 @@ class KetuaShell extends StatelessWidget {
             ),
           ),
 
-          // Main content
+          // ── Main content ─────────────────────────────────────────────
           Expanded(child: child),
         ],
       ),
     );
   }
 }
+
+// ── Shared sidebar widgets ────────────────────────────────────────────────────
 
 class _Label extends StatelessWidget {
   final String text;
