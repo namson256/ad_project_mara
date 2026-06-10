@@ -108,6 +108,15 @@ class KetuaShell extends StatelessWidget {
                           onTap: () => context.go('/ketua-isu-disiplin'),
                         ),
 
+                        // TEMPAHAN
+                        const _Label('TEMPAHAN'),
+                        _Item(
+                          icon: Icons.event_available_outlined,
+                          label: 'Semakan Tempahan',
+                          selected: currentRoute == '/ketua-booking',
+                          onTap: () => context.go('/ketua-booking'),
+                        ),
+
                         // SISTEM
                         const _Label('SISTEM'),
                         _Item(

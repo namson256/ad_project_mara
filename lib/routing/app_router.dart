@@ -13,6 +13,8 @@ import '../views/senarai_kursus_view.dart';
 import '../views/admin/urus_pengguna_view.dart';
 import '../views/laporan/pelaporan_view.dart';
 import '../views/laporan/isu_disiplin_view.dart';
+import '../views/lecturer/lecturer_booking_view.dart';
+import '../views/ketua/ketua_booking_view.dart';
 
 /// AppRouter
 /// ----------------
@@ -89,6 +91,11 @@ class AppRouter {
         name: 'lecturer-isu-disiplin',
         builder: (context, state) => const IsuDisiplinView(),
       ),
+      GoRoute(
+        path: '/lecturer-booking',
+        name: 'lecturer-booking',
+        builder: (context, state) => const LecturerBookingView(),
+      ),
 
       // --- Ketua Program routes ---
       GoRoute(
@@ -105,6 +112,11 @@ class AppRouter {
         path: '/ketua-isu-disiplin',
         name: 'ketua-isu-disiplin',
         builder: (context, state) => const IsuDisiplinView(),
+      ),
+      GoRoute(
+        path: '/ketua-booking',
+        name: 'ketua-booking',
+        builder: (context, state) => const KetuaBookingView(),
       ),
 
       // --- Timetable routes (Woo Cheng Shuan) ---

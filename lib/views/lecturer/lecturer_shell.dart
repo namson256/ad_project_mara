@@ -125,8 +125,8 @@ class LecturerShell extends StatelessWidget {
                 _NavItem(
                   icon: Icons.event_available_outlined,
                   label: 'Tempahan',
-                  selected: false,
-                  onTap: () => context.go('/lecturer-dashboard'),
+                  selected: currentRoute == '/lecturer-booking',
+                  onTap: () => context.go('/lecturer-booking'),
                 ),
                 const Spacer(),
                 Padding(

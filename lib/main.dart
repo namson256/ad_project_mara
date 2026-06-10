@@ -8,6 +8,7 @@ import 'controllers/attendance_controller.dart';
 import 'controllers/timetable_controller.dart';
 import 'controllers/course_controller.dart';
 import 'controllers/discipline_controller.dart';
+import 'controllers/booking_controller.dart';
 import 'routing/app_router.dart';
 
 void main() async {
@@ -31,6 +32,7 @@ class LecturerPortalApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TimetableController()),
         ChangeNotifierProvider(create: (_) => CourseController()),
         ChangeNotifierProvider(create: (_) => DisciplineController()),
+        ChangeNotifierProvider(create: (_) => BookingController()),
       ],
       child: Builder(
         builder: (context) {
@@ -42,7 +44,7 @@ class LecturerPortalApp extends StatelessWidget {
           final router = AppRouter(authController).router;
 
           return MaterialApp.router(
-            title: 'Portal Akademik MARA',
+            title: 'Portal Pensyarah',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               primarySwatch: Colors.indigo,
