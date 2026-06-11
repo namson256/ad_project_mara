@@ -145,10 +145,10 @@ class _UploadState extends State<UploadTimeScheduleView> {
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(4),
             borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(4),
             borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -293,7 +293,7 @@ class _UploadState extends State<UploadTimeScheduleView> {
               _FieldLabel('Masa mula'),
               InkWell(
                 onTap: () => _pickTime(true),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(4),
                 child: InputDecorator(
                   decoration: _dec(''),
                   child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -308,7 +308,7 @@ class _UploadState extends State<UploadTimeScheduleView> {
               _FieldLabel('Masa tamat'),
               InkWell(
                 onTap: () => _pickTime(false),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(4),
                 child: InputDecorator(
                   decoration: _dec(''),
                   child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -339,7 +339,7 @@ class _UploadState extends State<UploadTimeScheduleView> {
                 backgroundColor: const Color(0xFF111827),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(4)),
               ),
               child: _saving
                   ? const SizedBox(width: 20, height: 20,
@@ -365,7 +365,7 @@ class _UploadState extends State<UploadTimeScheduleView> {
         Container(
           decoration: BoxDecoration(
             color: const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
           child: TextField(
@@ -393,7 +393,7 @@ class _UploadState extends State<UploadTimeScheduleView> {
               backgroundColor: const Color(0xFF111827),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(4)),
             ),
           ),
         ),
@@ -497,10 +497,10 @@ class _ShowState extends State<ShowTimetableSlotView>
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(4),
                         borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
                     enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(4),
                         borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
                   ),
                 ),
@@ -514,9 +514,9 @@ class _ShowState extends State<ShowTimetableSlotView>
               controller: _tabCtrl,
               isScrollable: true,
               tabAlignment: TabAlignment.start,
-              indicatorColor: const Color(0xFF4F46E5),
+              indicatorColor: const Color(0xFF8B1538),
               indicatorWeight: 2,
-              labelColor: const Color(0xFF4F46E5),
+              labelColor: const Color(0xFF8B1538),
               unselectedLabelColor: Colors.grey,
               labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -530,7 +530,7 @@ class _ShowState extends State<ShowTimetableSlotView>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4F46E5),
+                          color: const Color(0xFF8B1538),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text('HARI INI',
@@ -587,7 +587,7 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     elevation: 0,
     shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(4),
         side: const BorderSide(color: Color(0xFFE5E7EB))),
     color: Colors.white,
     child: Padding(padding: const EdgeInsets.all(24), child: child),
@@ -618,8 +618,8 @@ class _SlotList extends StatelessWidget {
         const SizedBox(width: 10),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-          decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(20)),
-          child: Text('${slots.length}', style: const TextStyle(color: Color(0xFF4F46E5), fontWeight: FontWeight.w700, fontSize: 13)),
+          decoration: BoxDecoration(color: const Color(0xFFFDE8ED), borderRadius: BorderRadius.circular(20)),
+          child: Text('${slots.length}', style: const TextStyle(color: Color(0xFF8B1538), fontWeight: FontWeight.w700, fontSize: 13)),
         ),
       ]),
       const SizedBox(height: 14),
@@ -636,7 +636,7 @@ class _SlotCard extends StatelessWidget {
   static const _dayLabels = ['Isnin','Selasa','Rabu','Khamis','Jumaat'];
 
   Color get _accent {
-    const colors = [Color(0xFF4F46E5),Color(0xFF0891B2),Color(0xFF7C3AED),Color(0xFFDC2626),Color(0xFF059669)];
+    const colors = [Color(0xFF8B1538),Color(0xFF0891B2),Color(0xFF7C3AED),Color(0xFFDC2626),Color(0xFF059669)];
     return colors[slot.subject.length % colors.length];
   }
 
@@ -645,7 +645,7 @@ class _SlotCard extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 10),
     elevation: 0,
     shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         side: const BorderSide(color: Color(0xFFE5E7EB))),
     color: Colors.white,
     child: IntrinsicHeight(

@@ -120,14 +120,14 @@ class _UrusPenggunaViewState extends State<UrusPenggunaView> {
 
   InputDecoration _dec(String label, IconData icon) => InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, size: 20, color: const Color(0xFF4F46E5)),
+        prefixIcon: Icon(icon, size: 20, color: const Color(0xFF8B1538)),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(4),
             borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(4),
             borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       );
@@ -185,7 +185,7 @@ class _UrusPenggunaViewState extends State<UrusPenggunaView> {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(4),
           side: const BorderSide(color: Color(0xFFE5E7EB))),
       color: Colors.white,
       child: Padding(
@@ -199,7 +199,7 @@ class _UrusPenggunaViewState extends State<UrusPenggunaView> {
                 Icon(
                   _editing == null ? Icons.person_add_outlined : Icons.edit_outlined,
                   size: 18,
-                  color: const Color(0xFF4F46E5),
+                  color: const Color(0xFF8B1538),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -282,7 +282,7 @@ class _UrusPenggunaViewState extends State<UrusPenggunaView> {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(4),
           side: const BorderSide(color: Color(0xFFE5E7EB))),
       color: Colors.white,
       child: Padding(
@@ -297,12 +297,12 @@ class _UrusPenggunaViewState extends State<UrusPenggunaView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEEF2FF),
+                  color: const Color(0xFFFDE8ED),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text('${lecturers.length}',
                     style: const TextStyle(
-                        color: Color(0xFF4F46E5), fontWeight: FontWeight.w700)),
+                        color: Color(0xFF8B1538), fontWeight: FontWeight.w700)),
               ),
             ]),
             const SizedBox(height: 16),
@@ -329,10 +329,10 @@ class _UrusPenggunaViewState extends State<UrusPenggunaView> {
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(vertical: 4),
                     leading: CircleAvatar(
-                      backgroundColor: const Color(0xFFEEF2FF),
+                      backgroundColor: const Color(0xFFFDE8ED),
                       child: Text(
                         l.name.isNotEmpty ? l.name[0].toUpperCase() : '?',
-                        style: const TextStyle(color: Color(0xFF4F46E5), fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Color(0xFF8B1538), fontWeight: FontWeight.bold),
                       ),
                     ),
                     title: Text(l.name, style: const TextStyle(fontWeight: FontWeight.w600)),

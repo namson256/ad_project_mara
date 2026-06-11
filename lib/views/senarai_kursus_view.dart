@@ -162,7 +162,7 @@ class _SenaraiKursusViewState extends State<SenaraiKursusView> {
             Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(4),
                   side: const BorderSide(color: Color(0xFFE5E7EB))),
               color: Colors.white,
               child: Padding(
@@ -178,7 +178,7 @@ class _SenaraiKursusViewState extends State<SenaraiKursusView> {
                                 ? Icons.add_circle_outline
                                 : Icons.edit_outlined,
                             size: 18,
-                            color: const Color(0xFF4F46E5)),
+                            color: const Color(0xFF8B1538)),
                         const SizedBox(width: 8),
                         Text(
                           _editing == null
@@ -307,7 +307,7 @@ class _SenaraiKursusViewState extends State<SenaraiKursusView> {
             Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(4),
                   side: const BorderSide(color: Color(0xFFE5E7EB))),
               color: Colors.white,
               clipBehavior: Clip.antiAlias,

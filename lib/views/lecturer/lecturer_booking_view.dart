@@ -61,11 +61,11 @@ class _LecturerBookingViewState extends State<LecturerBookingView> {
                 ),
                 FilledButton.icon(
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF4F46E5),
+                    backgroundColor: const Color(0xFF8B1538),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 18, vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(4)),
                   ),
                   onPressed: () => _openCreateDialog(context),
                   icon: const Icon(Icons.add, size: 18),
@@ -82,8 +82,8 @@ class _LecturerBookingViewState extends State<LecturerBookingView> {
                 Expanded(child: _StatPill(
                   label: 'JUMLAH',
                   value: '${booking.forLecturer(me).length}',
-                  color: const Color(0xFF4F46E5),
-                  bg: const Color(0xFFEEF2FF),
+                  color: const Color(0xFF8B1538),
+                  bg: const Color(0xFFFDE8ED),
                   icon: Icons.event_available_outlined,
                 )),
                 const SizedBox(width: 12),
@@ -123,10 +123,10 @@ class _LecturerBookingViewState extends State<LecturerBookingView> {
                         label: Text(s),
                         selected: _filter == s,
                         onSelected: (_) => setState(() => _filter = s),
-                        selectedColor: const Color(0xFFEEF2FF),
+                        selectedColor: const Color(0xFFFDE8ED),
                         labelStyle: TextStyle(
                           color: _filter == s
-                              ? const Color(0xFF4F46E5)
+                              ? const Color(0xFF8B1538)
                               : const Color(0xFF374151),
                           fontWeight: FontWeight.w600,
                         ),
@@ -237,7 +237,7 @@ class _CreateBookingDialogState extends State<_CreateBookingDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560, maxHeight: 700),
         child: Column(
@@ -395,7 +395,7 @@ class _CreateBookingDialogState extends State<_CreateBookingDialog> {
                   const SizedBox(width: 8),
                   FilledButton(
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF4F46E5),
+                      backgroundColor: const Color(0xFF8B1538),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 18, vertical: 14),
                     ),
@@ -586,7 +586,7 @@ class _StatPill extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Row(
@@ -594,7 +594,7 @@ class _StatPill extends StatelessWidget {
           Container(
             width: 38, height: 38,
             decoration: BoxDecoration(
-                color: bg, borderRadius: BorderRadius.circular(10)),
+                color: bg, borderRadius: BorderRadius.circular(4)),
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(width: 12),
@@ -633,7 +633,7 @@ class _BookingCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
@@ -767,7 +767,7 @@ class _TypeBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: isReplacement
-            ? const Color(0xFFEEF2FF)
+            ? const Color(0xFFFDE8ED)
             : const Color(0xFFE0F2FE),
         borderRadius: BorderRadius.circular(6),
       ),
@@ -776,7 +776,7 @@ class _TypeBadge extends StatelessWidget {
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: isReplacement
-                  ? const Color(0xFF4F46E5)
+                  ? const Color(0xFF8B1538)
                   : const Color(0xFF0891B2))),
     );
   }
@@ -792,7 +792,7 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
@@ -810,7 +810,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 12),
             FilledButton.icon(
               style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF4F46E5)),
+                  backgroundColor: const Color(0xFF8B1538)),
               onPressed: onCreate,
               icon: const Icon(Icons.add, size: 16),
               label: const Text('Cipta tempahan pertama anda'),

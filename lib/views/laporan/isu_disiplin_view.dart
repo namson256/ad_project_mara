@@ -183,7 +183,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                     backgroundColor: _onlyLowAttendance ? const Color(0xFFEF4444) : Colors.white,
                     foregroundColor: _onlyLowAttendance ? Colors.white : const Color(0xFF374151),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: _onlyLowAttendance ? Colors.transparent : const Color(0xFFE5E7EB))),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: _onlyLowAttendance ? Colors.transparent : const Color(0xFFE5E7EB))),
                   ),
                   icon: Icon(
                     _onlyLowAttendance ? Icons.filter_alt_off_outlined : Icons.filter_alt_outlined,
@@ -196,10 +196,10 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                 ElevatedButton.icon(
                   onPressed: () => _showAddEditDialog(context, null, user),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4F46E5),
+                    backgroundColor: const Color(0xFF8B1538),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   ),
                   icon: const Icon(Icons.add, size: 20),
                   label: const Text('Tambah Rekod',
@@ -224,13 +224,13 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                   padding: const EdgeInsets.only(right: 12),
                   child: InkWell(
                     onTap: () => setState(() => _selectedCategory = cat),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(4),
                     child: Container(
                       width: 170,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        color: isSelected ? const Color(0xFF8B1538) : Colors.white,
+                        borderRadius: BorderRadius.circular(4),
                         border: Border.all(
                           color: isSelected ? Colors.transparent : const Color(0xFFE5E7EB),
                         ),
@@ -272,7 +272,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                   elevation: 0,
                   color: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(4),
                     side: const BorderSide(color: Color(0xFFE5E7EB)),
                   ),
                   child: Padding(
@@ -348,7 +348,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
       color: Colors.white,
       margin: const EdgeInsets.only(bottom: 14),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(4),
         side: const BorderSide(color: Color(0xFFE5E7EB)),
       ),
       child: Column(
@@ -375,11 +375,11 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                 children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: const Color(0xFFEEF2FF),
+                    backgroundColor: const Color(0xFFFDE8ED),
                     child: Text(
                       name.isNotEmpty ? name[0] : 'S',
                       style: const TextStyle(
-                          fontWeight: FontWeight.bold, color: Color(0xFF4F46E5)),
+                          fontWeight: FontWeight.bold, color: Color(0xFF8B1538)),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -419,7 +419,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEF3C7),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text('${records.length} Kes',
                         style: const TextStyle(
@@ -492,7 +492,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
@@ -511,7 +511,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF7ED),
                     border: Border.all(color: const Color(0xFFFFE8D6)),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
@@ -555,7 +555,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: const Color(0xFFF0F9FF),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: const Color(0xFFBAE6FD)),
               ),
               child: Row(
@@ -598,7 +598,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                 IconButton(
                   tooltip: 'Edit / Tambah Catatan',
                   icon: const Icon(Icons.edit_outlined,
-                      size: 16, color: Color(0xFF4F46E5)),
+                      size: 16, color: Color(0xFF8B1538)),
                   onPressed: () => _showAddEditDialog(context, record, currentUser),
                 ),
                 // Delete button
@@ -641,7 +641,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: fg.withValues(alpha: 0.4)),
       ),
       child: DropdownButtonHideUnderline(
@@ -683,7 +683,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         title: const Text('Padam Rekod Disiplin'),
         content:
             const Text('Adakah anda pasti mahu memadamkan rekod disiplin ini secara kekal?'),
@@ -749,7 +749,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
       builder: (ctx) {
         return StatefulBuilder(builder: (ctx, setDS) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
             title: Text(isAutoEdit
                 ? 'Kemas Kini Rekod Kehadiran Automatik'
                 : isEdit
@@ -769,7 +769,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFF7ED),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(4),
                           border: Border.all(color: const Color(0xFFFFE8D6)),
                         ),
                         child: const Row(
@@ -804,8 +804,8 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.grey.shade50,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade300)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade300)),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         ),
                         items: studentDetailsMap.entries.map((e) {
@@ -850,8 +850,8 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.grey.shade50,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade300)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade300)),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         ),
                         items: _categories.where((c) => c != 'Semua').map((cat) {
@@ -940,8 +940,8 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                               decoration: InputDecoration(
                                 filled: true,
                                 fillColor: Colors.grey.shade50,
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade300)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                               ),
                                items: ['Rendah', 'Sederhana', 'Tinggi'].map((s) {
@@ -972,8 +972,8 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                                decoration: InputDecoration(
                                  filled: true,
                                  fillColor: Colors.grey.shade50,
-                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
-                                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.grey.shade300)),
                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                                ),
                                items: _statusOptions.map((s) {
@@ -1214,7 +1214,7 @@ class _NotificationBannerState extends State<_NotificationBanner>
                 color: isSuccess
                     ? const Color(0xFFDEF7EC)
                     : const Color(0xFFFDE8E8),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(4),
                 border: Border.all(
                   color: isSuccess
                       ? const Color(0xFFBCF0DA)

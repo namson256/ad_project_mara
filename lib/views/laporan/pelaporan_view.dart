@@ -144,8 +144,8 @@ class _PelaporanDashboardBody extends StatelessWidget {
                       label: 'JUMLAH PELAJAR',
                       value: '$totalStudents',
                       icon: Icons.people_outline,
-                      color: Color(0xFF4F46E5),
-                      bgColor: Color(0xFFEEF2FF),
+                      color: Color(0xFF8B1538),
+                      bgColor: Color(0xFFFDE8ED),
                     ),
                   ),
                   SizedBox(
@@ -274,7 +274,7 @@ class _StatCard extends StatelessWidget {
       elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(4),
         side: const BorderSide(color: Color(0xFFE5E7EB)),
       ),
       child: Padding(
@@ -300,7 +300,7 @@ class _StatCard extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: bgColor,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: Icon(icon, color: color, size: 20),
                 ),
@@ -356,7 +356,7 @@ class _CategoryBreakdownCard extends StatelessWidget {
       elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(4),
         side: const BorderSide(color: Color(0xFFE5E7EB)),
       ),
       child: Padding(
@@ -408,7 +408,7 @@ class _CategoryBreakdownCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: ratio,
                         minHeight: 10,
@@ -443,7 +443,7 @@ class _ResolutionGaugeCard extends StatelessWidget {
       elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(4),
         side: const BorderSide(color: Color(0xFFE5E7EB)),
       ),
       child: Padding(
@@ -581,7 +581,7 @@ class _SeverityBreakdownCard extends StatelessWidget {
       elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(4),
         side: const BorderSide(color: Color(0xFFE5E7EB)),
       ),
       child: Padding(

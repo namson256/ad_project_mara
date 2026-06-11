@@ -94,7 +94,7 @@ class _AttendanceMarkingViewState extends State<AttendanceMarkingView>
                 height: 80,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(4),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.indigo.withOpacity(0.12),
@@ -110,7 +110,7 @@ class _AttendanceMarkingViewState extends State<AttendanceMarkingView>
                     child: CircularProgressIndicator(
                       strokeWidth: 3.5,
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFF4F46E5)),
+                          AlwaysStoppedAnimation<Color>(Color(0xFF8B1538)),
                     ),
                   ),
                 ),
@@ -190,8 +190,8 @@ class _AttendanceMarkingViewState extends State<AttendanceMarkingView>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
-                        borderRadius: BorderRadius.circular(6),
+                        color: const Color(0xFFFDE8ED),
+                        borderRadius: BorderRadius.circular(4),
                         border:
                             Border.all(color: const Color(0xFFC7D2FE)),
                       ),
@@ -199,14 +199,14 @@ class _AttendanceMarkingViewState extends State<AttendanceMarkingView>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.calendar_today,
-                              size: 11, color: Color(0xFF4F46E5)),
+                              size: 11, color: Color(0xFF8B1538)),
                           const SizedBox(width: 4),
                           Text(
                             'M$currentWeek',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF4F46E5),
+                              color: Color(0xFF8B1538),
                             ),
                           ),
                         ],
@@ -236,7 +236,7 @@ class _AttendanceMarkingViewState extends State<AttendanceMarkingView>
                           vertical: 10,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: const Text('Kembali', style: TextStyle(fontSize: 13)),
@@ -251,7 +251,7 @@ class _AttendanceMarkingViewState extends State<AttendanceMarkingView>
                     elevation: 0,
                     color: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(4),
                       side: const BorderSide(color: Color(0xFFE5E7EB)),
                     ),
                     child: Padding(
@@ -301,7 +301,7 @@ class _AttendanceMarkingViewState extends State<AttendanceMarkingView>
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius:
-                                            BorderRadius.circular(8),
+                                            BorderRadius.circular(4),
                                       ),
                                       itemBuilder: (context) =>
                                           courses.map((course) {
@@ -323,7 +323,7 @@ class _AttendanceMarkingViewState extends State<AttendanceMarkingView>
                                           border: Border.all(
                                               color: Colors.grey.shade300),
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(4),
                                         ),
                                         child: Row(
                                           children: [
@@ -490,8 +490,8 @@ class _WeekColumnHeader extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: const Color(0xFF4F46E5),
-          borderRadius: BorderRadius.circular(8),
+          color: const Color(0xFF8B1538),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -660,7 +660,7 @@ class _AttendanceCell extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
             color: _statusColor(status).withOpacity(0.5),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(color: Colors.grey.shade300),
           ),
           child: Row(
@@ -690,9 +690,9 @@ class _AttendanceCell extends StatelessWidget {
       width: 102,
       decoration: isCurrent
           ? BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(4),
               border: Border.all(color: const Color(0xFF818CF8), width: 2),
-              color: const Color(0xFFEEF2FF),
+              color: const Color(0xFFFDE8ED),
             )
           : null,
       child: DropdownButtonHideUnderline(
@@ -709,7 +709,7 @@ class _AttendanceCell extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     decoration: BoxDecoration(
                       color: _statusColor(s),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       s.label,

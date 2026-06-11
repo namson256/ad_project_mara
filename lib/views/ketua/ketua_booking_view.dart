@@ -82,8 +82,8 @@ class _KetuaBookingViewState extends State<KetuaBookingView> {
                   label: 'KELAS GANTI',
                   value:
                       '${booking.approvedReplacements.length}',
-                  color: const Color(0xFF4F46E5),
-                  bg: const Color(0xFFEEF2FF),
+                  color: const Color(0xFF8B1538),
+                  bg: const Color(0xFFFDE8ED),
                   icon: Icons.swap_horiz_outlined,
                 )),
               ],
@@ -99,10 +99,10 @@ class _KetuaBookingViewState extends State<KetuaBookingView> {
                         label: Text(s),
                         selected: _filter == s,
                         onSelected: (_) => setState(() => _filter = s),
-                        selectedColor: const Color(0xFFEEF2FF),
+                        selectedColor: const Color(0xFFFDE8ED),
                         labelStyle: TextStyle(
                           color: _filter == s
-                              ? const Color(0xFF4F46E5)
+                              ? const Color(0xFF8B1538)
                               : const Color(0xFF374151),
                           fontWeight: FontWeight.w600,
                         ),
@@ -176,7 +176,7 @@ class _KetuaBookingViewState extends State<KetuaBookingView> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFEE2E2),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(4),
                     border: Border.all(color: const Color(0xFFFCA5A5)),
                   ),
                   child: Row(
@@ -198,7 +198,7 @@ class _KetuaBookingViewState extends State<KetuaBookingView> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD1FAE5),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Row(
                     children: [
@@ -356,7 +356,7 @@ class _StatPill extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Row(
@@ -364,7 +364,7 @@ class _StatPill extends StatelessWidget {
           Container(
             width: 38, height: 38,
             decoration: BoxDecoration(
-                color: bg, borderRadius: BorderRadius.circular(10)),
+                color: bg, borderRadius: BorderRadius.circular(4)),
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(width: 12),
@@ -408,7 +408,7 @@ class _BookingReviewCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
@@ -590,16 +590,16 @@ class _TypeBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: isReplacement
-            ? const Color(0xFFEEF2FF)
+            ? const Color(0xFFFDE8ED)
             : const Color(0xFFE0F2FE),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Text(type,
           style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: isReplacement
-                  ? const Color(0xFF4F46E5)
+                  ? const Color(0xFF8B1538)
                   : const Color(0xFF0891B2))),
     );
   }
@@ -614,7 +614,7 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(

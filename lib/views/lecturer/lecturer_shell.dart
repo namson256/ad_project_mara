@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../controllers/auth_controller.dart';
 
-class LecturerShell extends StatelessWidget {
+class LecturerShell extends StatefulWidget {
   final String currentRoute;
   final Widget child;
 
@@ -14,9 +14,40 @@ class LecturerShell extends StatelessWidget {
     required this.child,
   });
 
+  @override
+  State<LecturerShell> createState() => _LecturerShellState();
+}
+
+class _LecturerShellState extends State<LecturerShell> with SingleTickerProviderStateMixin {
   static const Color _sidebarBg = Color(0xFF10162E);
   static const Color _sidebarCard = Color(0xFF1A2344);
   static const Color _accent = Color(0xFF8B1538); // MARA Maroon
+
+  bool _isNavigating = false;
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  void _navigateWithLoading(String route) {
+    if (widget.currentRoute == route) return;
+    setState(() => _isNavigating = true);
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) context.go(route);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +55,9 @@ class LecturerShell extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      body: Row(
+      body: Stack(
+        children: [
+          Row(
         children: [
           Container(
             width: 248,
@@ -98,27 +131,27 @@ class LecturerShell extends StatelessWidget {
                 _NavItem(
                   icon: Icons.dashboard_outlined,
                   label: 'Papan Pemuka',
-                  selected: currentRoute == '/lecturer-dashboard',
+                  selected: widget.currentRoute == '/lecturer-dashboard',
                   onTap: () => context.go('/lecturer-dashboard'),
                 ),
                 const _SectionLabel(label: 'KEHADIRAN'),
                 _NavItem(
                   icon: Icons.fact_check_outlined,
                   label: 'Tanda Kehadiran',
-                  selected: currentRoute == '/lecturer-attendance',
-                  onTap: () => context.go('/lecturer-attendance'),
+                  selected: widget.currentRoute == '/lecturer-attendance',
+                  onTap: () => _navigateWithLoading('/lecturer-attendance'),
                 ),
                 const _SectionLabel(label: 'PELAPORAN'),
                 _NavItem(
                   icon: Icons.bar_chart_outlined,
                   label: 'Modul Pelaporan',
-                  selected: currentRoute == '/lecturer-pelaporan',
+                  selected: widget.currentRoute == '/lecturer-pelaporan',
                   onTap: () => context.go('/lecturer-pelaporan'),
                 ),
                 _NavItem(
                   icon: Icons.warning_amber_outlined,
                   label: 'Isu Disiplin',
-                  selected: currentRoute == '/lecturer-isu-disiplin',
+                  selected: widget.currentRoute == '/lecturer-isu-disiplin',
                   onTap: () => context.go('/lecturer-isu-disiplin'),
                 ),
                 const _SectionLabel(label: 'JADUAL'),
@@ -131,7 +164,7 @@ class LecturerShell extends StatelessWidget {
                 _NavItem(
                   icon: Icons.event_available_outlined,
                   label: 'Tempahan',
-                  selected: currentRoute == '/lecturer-booking',
+                  selected: widget.currentRoute == '/lecturer-booking',
                   onTap: () => context.go('/lecturer-booking'),
                 ),
                 const Spacer(),
@@ -214,7 +247,70 @@ class LecturerShell extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(child: child),
+          Expanded(child: widget.child),
+        ],
+      ),
+          // Loading overlay spanning the whole shell
+          if (_isNavigating)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: Center(
+                  child: FadeTransition(
+                    opacity: Tween<double>(begin: 0.4, end: 1.0).animate(
+                      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.indigo.withOpacity(0.12),
+                                blurRadius: 32,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 36,
+                              height: 36,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B1538)),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Memuatkan rekod kehadiran...',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Sila tunggu sebentar',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
