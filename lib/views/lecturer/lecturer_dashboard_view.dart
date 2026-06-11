@@ -7,8 +7,39 @@ import 'lecturer_shell.dart';
 /// LecturerDashboardView
 /// ----------------
 /// Minimal welcome screen for lecturers. Centered card, max-width for web.
-class LecturerDashboardView extends StatelessWidget {
+class LecturerDashboardView extends StatefulWidget {
   const LecturerDashboardView({super.key});
+
+  @override
+  State<LecturerDashboardView> createState() => _LecturerDashboardViewState();
+}
+
+class _LecturerDashboardViewState extends State<LecturerDashboardView>
+    with SingleTickerProviderStateMixin {
+  bool _isNavigating = false;
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  void _navigateWithLoading(BuildContext context, String route) {
+    setState(() => _isNavigating = true);
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) context.go(route);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,71 +48,31 @@ class LecturerDashboardView extends StatelessWidget {
 
     return LecturerShell(
       currentRoute: '/lecturer-dashboard',
-      child: SingleChildScrollView(
+      child: Stack(
+        children: [
+          SingleChildScrollView(
         padding: const EdgeInsets.all(28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Papan Pemuka Pensyarah',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Selasa, 26 Mei 2026',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                const Text(
+                  'Papan Pemuka Pensyarah',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF111827),
                   ),
                 ),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () => context.go('/lecturer-pelaporan'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF111827),
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text('Pelaporan'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => context.go('/lecturer-attendance'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF111827),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text('Tanda Kehadiran'),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  'Selasa, 26 Mei 2026',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
@@ -157,7 +148,7 @@ class LecturerDashboardView extends StatelessWidget {
                         trailing: Text(
                           'Lihat jadual',
                           style: TextStyle(
-                            color: Color(0xFF4F46E5),
+                            color: Color(0xFF8B1538),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -183,15 +174,11 @@ class LecturerDashboardView extends StatelessWidget {
                           children: [
                             _QuickActionButton(
                               label: 'Tanda kehadiran',
-                              onTap: () => context.go('/lecturer-attendance'),
+                              onTap: () => _navigateWithLoading(context, '/lecturer-attendance'),
                             ),
                             _QuickActionButton(
                               label: 'Lapor isu disiplin',
                               onTap: () => context.go('/lecturer-isu-disiplin'),
-                            ),
-                            _QuickActionButton(
-                              label: 'Lihat jadual saya',
-                              onTap: () => context.go('/lecturer-dashboard'),
                             ),
                             _QuickActionButton(
                               label: 'Tempah kelas ganti',
@@ -254,29 +241,90 @@ class LecturerDashboardView extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text(
-                        'Pensyarah',
-                        style: TextStyle(
-                          color: Color(0xFF2563EB),
-                          fontWeight: FontWeight.w700,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFDE8ED),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: const Text(
+                          'Pensyarah',
+                          style: TextStyle(
+                            color: Color(0xFF8B1538),
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
             ),
           ],
         ),
+      ),
+          // Loading overlay
+          if (_isNavigating)
+            Container(
+              color: const Color(0xFFF5F7FA),
+              child: Center(
+                child: FadeTransition(
+                  opacity: Tween<double>(begin: 0.4, end: 1.0).animate(
+                    CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.indigo.withOpacity(0.12),
+                              blurRadius: 32,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B1538)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Memuatkan rekod kehadiran...',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4B5563),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Sila tunggu sebentar',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -294,7 +342,7 @@ class _MetricCard extends StatelessWidget {
     required this.value,
     required this.icon,
     this.valueColor = const Color(0xFF111827),
-    this.iconColor = const Color(0xFF4F46E5),
+    this.iconColor = const Color(0xFF8B1538),
   });
 
   @override

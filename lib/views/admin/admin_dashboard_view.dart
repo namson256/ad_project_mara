@@ -106,7 +106,7 @@ class _SummaryCard extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.1)),
-              Icon(icon, color: const Color(0xFF4F46E5), size: 22),
+              Icon(icon, color: const Color(0xFF8B1538), size: 22),
             ]),
             const SizedBox(height: 12),
             Text(value,

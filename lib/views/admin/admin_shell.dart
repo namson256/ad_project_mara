@@ -19,7 +19,7 @@ class AdminShell extends StatelessWidget {
 
   static const Color _bg   = Color(0xFF10162E);
   static const Color _card = Color(0xFF1A2344);
-  static const Color _accent = Color(0xFF4F5BD5);
+  static const Color _accent = Color(0xFF8B1538); // MARA Maroon
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,13 @@ class AdminShell extends StatelessWidget {
           // ── Sidebar ──────────────────────────────────────────────────
           Container(
             width: 248,
-            color: _bg,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF0D1B3E), Color(0xFF10162E)],
+              ),
+            ),
             child: Column(
               children: [
                 // Brand
@@ -273,7 +279,7 @@ class _Item extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       child: Material(
-        color: selected ? const Color(0xFF2C3767) : Colors.transparent,
+        color: selected ? const Color(0xFF2D1520) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
@@ -297,7 +303,7 @@ class _Item extends StatelessWidget {
                 ),
                 if (selected)
                   const Icon(Icons.circle,
-                      color: Color(0xFF5C6BFF), size: 7),
+                      color: Color(0xFFE11D48), size: 7),
               ],
             ),
           ),

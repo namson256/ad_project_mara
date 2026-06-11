@@ -97,13 +97,13 @@ class KetuaDashboardView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
+                    color: const Color(0xFFFDE8ED),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFC7D2FE)),
+                    border: Border.all(color: const Color(0xFFFDA4AF)),
                   ),
                   child: const Text('Ketua Program',
                       style: TextStyle(
-                          color: Color(0xFF4F46E5),
+                          color: Color(0xFF8B1538),
                           fontWeight: FontWeight.w600,
                           fontSize: 13)),
                 ),
@@ -120,8 +120,8 @@ class KetuaDashboardView extends StatelessWidget {
                   label: 'JUMLAH PELAJAR',
                   value: '$totalPelajar',
                   icon: Icons.groups_outlined,
-                  color: const Color(0xFF4F46E5),
-                  bg: const Color(0xFFEEF2FF),
+                  color: const Color(0xFF8B1538),
+                  bg: const Color(0xFFFDE8ED),
                 ),
                 _StatCard(
                   label: 'JUMLAH PENSYARAH',
@@ -233,11 +233,11 @@ class KetuaDashboardView extends StatelessWidget {
                               leading: Container(
                                 width: 38, height: 38,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFEEF2FF),
+                                  color: const Color(0xFFFDE8ED),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(Icons.menu_book_outlined,
-                                    color: Color(0xFF4F46E5), size: 18),
+                                    color: Color(0xFF8B1538), size: 18),
                               ),
                               title: c.name,
                               subtitle: '${c.code}  ·  ${c.lecturerName}',
@@ -430,7 +430,7 @@ class _SectionCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: const Color(0xFF4F46E5), size: 18),
+                Icon(icon, color: const Color(0xFF8B1538), size: 18),
                 const SizedBox(width: 8),
                 Text(title,
                     style: const TextStyle(
@@ -440,7 +440,7 @@ class _SectionCard extends StatelessWidget {
                   TextButton(
                     onPressed: onAction,
                     style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF4F46E5),
+                        foregroundColor: const Color(0xFF8B1538),
                         padding: EdgeInsets.zero,
                         textStyle: const TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w600)),

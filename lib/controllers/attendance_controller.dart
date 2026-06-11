@@ -7,6 +7,23 @@ class AttendanceController extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   static const String _collection = 'course_attendance';
 
+  /// Semester start date (Monday of Week 1).
+  /// Weeks roll over every Monday.
+  static final DateTime semesterStartDate = DateTime(2026, 5, 5); // 5 May 2026
+
+  /// Returns the current academic week number (1-based).
+  /// After totalWeeks it clamps at totalWeeks; before start returns 0.
+  static int get currentWeek {
+    final now = DateTime.now();
+    final diff = now.difference(semesterStartDate).inDays;
+    if (diff < 0) return 0; // semester hasn't started
+    final week = (diff ~/ 7) + 1;
+    return week > totalWeeks ? totalWeeks : week;
+  }
+
+  /// Returns true if [week] is the current editable week.
+  static bool isWeekEditable(int week) => week == currentWeek;
+
   /// All students (shared names/IDs across courses).
   static final List<AttendanceStudent> _defaultStudents = [
     AttendanceStudent(id: 's01', name: 'ADAM HAIQAL BIN ROZLAN',             totalWeeks: totalWeeks),

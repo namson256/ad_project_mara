@@ -16,7 +16,7 @@ class LecturerShell extends StatelessWidget {
 
   static const Color _sidebarBg = Color(0xFF10162E);
   static const Color _sidebarCard = Color(0xFF1A2344);
-  static const Color _accent = Color(0xFF4F5BD5);
+  static const Color _accent = Color(0xFF8B1538); // MARA Maroon
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,13 @@ class LecturerShell extends StatelessWidget {
         children: [
           Container(
             width: 248,
-            color: _sidebarBg,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF0D1B3E), Color(0xFF10162E)],
+              ),
+            ),
             child: Column(
               children: [
                 Padding(
@@ -255,7 +261,7 @@ class _NavItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Material(
-        color: selected ? const Color(0xFF2C3767) : Colors.transparent,
+        color: selected ? const Color(0xFF2D1520) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
@@ -281,7 +287,7 @@ class _NavItem extends StatelessWidget {
                   ),
                 ),
                 if (selected)
-                  const Icon(Icons.circle, color: Color(0xFF5C6BFF), size: 8),
+                  const Icon(Icons.circle, color: Color(0xFFE11D48), size: 8),
               ],
             ),
           ),
