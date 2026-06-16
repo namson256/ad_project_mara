@@ -35,6 +35,10 @@ class TimetableSlotModel {
   final String startTime; // "HH:mm"
   final String endTime;   // "HH:mm"
   final String section;   // e.g. "SECP3106-01"
+  final String courseId;
+  final String lecturerId;
+  final String semester;
+  final String session;
 
   const TimetableSlotModel({
     required this.id,
@@ -45,6 +49,10 @@ class TimetableSlotModel {
     required this.startTime,
     required this.endTime,
     required this.section,
+    this.courseId = '',
+    this.lecturerId = '',
+    this.semester = 'Semester 1',
+    this.session = '2025/2026',
   });
 
   // ---------------------------------------------------------------------------
@@ -59,19 +67,27 @@ class TimetableSlotModel {
         'startTime': startTime,
         'endTime': endTime,
         'section': section,
+        'courseId': courseId,
+        'lecturerId': lecturerId,
+        'semester': semester,
+        'session': session,
       };
 
   factory TimetableSlotModel.fromDoc(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return TimetableSlotModel(
       id: doc.id,
-      subject: data['subject'] as String,
-      lecturerName: data['lecturerName'] as String,
-      venue: data['venue'] as String,
-      day: DayOfWeek.fromString(data['day'] as String),
-      startTime: data['startTime'] as String,
-      endTime: data['endTime'] as String,
-      section: data['section'] as String,
+      subject: data['subject'] as String? ?? '',
+      lecturerName: data['lecturerName'] as String? ?? '',
+      venue: data['venue'] as String? ?? '',
+      day: DayOfWeek.fromString(data['day'] as String? ?? 'monday'),
+      startTime: data['startTime'] as String? ?? '',
+      endTime: data['endTime'] as String? ?? '',
+      section: data['section'] as String? ?? '',
+      courseId: data['courseId'] as String? ?? '',
+      lecturerId: data['lecturerId'] as String? ?? '',
+      semester: data['semester'] as String? ?? 'Semester 1',
+      session: data['session'] as String? ?? '2025/2026',
     );
   }
 
@@ -84,6 +100,10 @@ class TimetableSlotModel {
     String? startTime,
     String? endTime,
     String? section,
+    String? courseId,
+    String? lecturerId,
+    String? semester,
+    String? session,
   }) =>
       TimetableSlotModel(
         id: id ?? this.id,
@@ -94,5 +114,9 @@ class TimetableSlotModel {
         startTime: startTime ?? this.startTime,
         endTime: endTime ?? this.endTime,
         section: section ?? this.section,
+        courseId: courseId ?? this.courseId,
+        lecturerId: lecturerId ?? this.lecturerId,
+        semester: semester ?? this.semester,
+        session: session ?? this.session,
       );
 }

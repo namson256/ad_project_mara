@@ -148,14 +148,7 @@ class AdminShell extends StatelessWidget {
                           onTap: () => context.go('/admin/isu-disiplin'),
                         ),
 
-                        // SISTEM
-                        const _Label('SISTEM'),
-                        _Item(
-                          icon: Icons.lock_outline,
-                          label: 'Pengesahan',
-                          selected: false,
-                          onTap: () {},
-                        ),
+
                       ],
                     ),
                   ),

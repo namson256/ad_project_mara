@@ -7,6 +7,7 @@ import '../views/forgot_password_view.dart';
 import '../views/admin/admin_dashboard_view.dart';
 import '../views/lecturer/attendance_marking_view.dart';
 import '../views/lecturer/lecturer_dashboard_view.dart';
+import '../views/lecturer/lecturer_timetable_view.dart';
 import '../views/ketua/ketua_dashboard_view.dart';
 import '../views/timetable_views.dart';
 import '../views/senarai_kursus_view.dart';
@@ -95,6 +96,11 @@ class AppRouter {
         path: '/lecturer-booking',
         name: 'lecturer-booking',
         builder: (context, state) => const LecturerBookingView(),
+      ),
+      GoRoute(
+        path: '/lecturer-timetable',
+        name: 'lecturer-timetable',
+        builder: (context, state) => const LecturerTimetableView(),
       ),
 
       // --- Ketua Program routes ---

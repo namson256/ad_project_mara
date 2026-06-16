@@ -33,6 +33,9 @@ class _UploadState extends State<UploadTimeScheduleView> {
   TimeOfDay _end   = const TimeOfDay(hour: 10, minute: 30);
   bool _saving     = false;
 
+  String _selectedSemester = 'Semester 1';
+  String _selectedSession  = '2025/2026';
+
   @override
   void initState() {
     super.initState();
@@ -87,11 +90,15 @@ class _UploadState extends State<UploadTimeScheduleView> {
         id: const Uuid().v4(),
         subject: _selectedCourseName!,
         lecturerName: _selectedLecturerName!,
+        lecturerId: _selectedLecturerId ?? '',
+        courseId: _selectedCourseId ?? '',
         venue: _venueCtrl.text.trim(),
         day: _day,
         startTime: _fmt24(_start),
         endTime: _fmt24(_end),
         section: _selectedSection!,
+        semester: _selectedSemester,
+        session: _selectedSession,
       ),
     );
     setState(() => _saving = false);
@@ -109,28 +116,175 @@ class _UploadState extends State<UploadTimeScheduleView> {
     }
   }
 
-  void _importCsv() {
-    final lines = _csvCtrl.text.trim().split('\n');
-    int added = 0;
-    for (final line in lines) {
-      final p = line.split(',');
-      if (p.length < 5) continue;
-      final dayIdx = int.tryParse(p[1].trim());
-      if (dayIdx == null || dayIdx < 0 || dayIdx > 4) continue;
-      context.read<TimetableController>().addSlot(TimetableSlotModel(
-        id: const Uuid().v4(),
-        subject: p[0].trim(),
-        lecturerName: 'TBA',
-        venue: p[4].trim(),
-        day: DayOfWeek.values[dayIdx],
-        startTime: p[2].trim(),
-        endTime: p[3].trim(),
-        section: p[0].trim(),
-      ));
-      added++;
+  Future<void> _importCsv() async {
+    if (_selectedLecturerId == null) {
+      _snack('Sila pilih pensyarah terlebih dahulu sebelum memuat naik CSV.', error: true);
+      return;
     }
+
+    final courses = context.read<CourseController>().courses;
+    final timetableCtrl = context.read<TimetableController>();
+    final existingSlots = timetableCtrl.slots;
+
+    final lines = _csvCtrl.text.trim().split('\n');
+    if (lines.isEmpty || (lines.length == 1 && lines[0].trim().isEmpty)) {
+      _snack('Sila masukkan kandungan CSV.', error: true);
+      return;
+    }
+
+    // Accumulator for successful slots to be added
+    final List<TimetableSlotModel> batchSlots = [];
+
+    // Parse each line and validate
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      if (line.isEmpty) continue;
+
+      // Skip CSV header if present (e.g. course_code, course_name, day, ...)
+      if (i == 0 && line.toLowerCase().contains('course_code')) {
+        continue;
+      }
+
+      final p = line.split(',');
+      if (p.length < 8) {
+        _snack('Baris ${i + 1}: Lajur tidak mencukupi (mesti ada 8 lajur).', error: true);
+        return;
+      }
+
+      final courseCode = p[0].trim().toUpperCase();
+      final rawDay = p[2].trim();
+      final startTimeStr = p[3].trim(); // "HH:mm"
+      final endTimeStr = p[4].trim();   // "HH:mm"
+      final venue = p[5].trim();
+      final semester = p[6].trim();
+      final academicSession = p[7].trim();
+
+      // 1. Verify course exists
+      final course = courses.firstWhere(
+        (c) => c.code.toUpperCase() == courseCode,
+        orElse: () => const CourseModel(id: '', code: '', name: '', lecturerId: '', lecturerName: '', department: '', sections: 1),
+      );
+      if (course.id.isEmpty) {
+        _snack('Baris ${i + 1}: Kod kursus "$courseCode" tidak wujud dalam Senarai Kursus.', error: true);
+        return;
+      }
+
+      // 2. Parse and verify day
+      final parsedDay = _parseCsvDay(rawDay);
+      if (parsedDay == null) {
+        _snack('Baris ${i + 1}: Hari "$rawDay" tidak sah (mesti Isnin-Jumaat).', error: true);
+        return;
+      }
+
+      // 3. Verify start time is earlier than end time
+      final sm = _toMinutes(startTimeStr);
+      final em = _toMinutes(endTimeStr);
+      if (em <= sm) {
+        _snack('Baris ${i + 1}: Waktu tamat ($endTimeStr) mesti selepas waktu mula ($startTimeStr).', error: true);
+        return;
+      }
+
+      // Create model
+      final slot = TimetableSlotModel(
+        id: const Uuid().v4(),
+        subject: course.name,
+        lecturerName: _selectedLecturerName!,
+        lecturerId: _selectedLecturerId!,
+        courseId: course.id,
+        venue: venue,
+        day: parsedDay,
+        startTime: startTimeStr,
+        endTime: endTimeStr,
+        section: '$courseCode-01', // Default section
+        semester: semester,
+        session: academicSession,
+      );
+
+      // 4. Prevent duplicate / time conflict
+      // Check against existing database slots
+      final dbConflict = _findConflictInLists(slot, existingSlots);
+      if (dbConflict != null) {
+        final isVenueConflict = dbConflict.venue.trim().toLowerCase() == slot.venue.trim().toLowerCase();
+        if (isVenueConflict) {
+          _snack('Baris ${i + 1}: Konflik tempat dengan "${dbConflict.subject}" (${dbConflict.startTime}–${dbConflict.endTime}) di ${dbConflict.venue}.', error: true);
+        } else {
+          _snack('Baris ${i + 1}: Konflik pensyarah dengan "${dbConflict.subject}" (${dbConflict.startTime}–${dbConflict.endTime}).', error: true);
+        }
+        return;
+      }
+
+      // Check against batch slots (to prevent self-conflicts within the CSV upload)
+      final batchConflict = _findConflictInLists(slot, batchSlots);
+      if (batchConflict != null) {
+        final isVenueConflict = batchConflict.venue.trim().toLowerCase() == slot.venue.trim().toLowerCase();
+        if (isVenueConflict) {
+          _snack('Baris ${i + 1}: Konflik tempat sesama CSV dengan "${batchConflict.subject}" (${batchConflict.startTime}–${batchConflict.endTime}) di ${batchConflict.venue}.', error: true);
+        } else {
+          _snack('Baris ${i + 1}: Konflik pensyarah sesama CSV dengan "${batchConflict.subject}" (${batchConflict.startTime}–${batchConflict.endTime}).', error: true);
+        }
+        return;
+      }
+
+      batchSlots.add(slot);
+    }
+
+    // If all pass validation, add them to DB!
+    setState(() => _saving = true);
+    int successfullyAdded = 0;
+    for (final slot in batchSlots) {
+      final err = await timetableCtrl.addSlot(slot);
+      if (err == null) {
+        successfullyAdded++;
+      } else {
+        _snack('Ralat semasa menyimpan ke pangkalan data: $err', error: true);
+        setState(() => _saving = false);
+        return;
+      }
+    }
+    setState(() => _saving = false);
     _csvCtrl.clear();
-    _snack('$added slot dimuat naik dari CSV.');
+    _snack('$successfullyAdded slot berjaya dimuat naik untuk $_selectedLecturerName.');
+  }
+
+  int _toMinutes(String hhmm) {
+    final parts = hhmm.trim().split(':');
+    if (parts.length < 2) return 0;
+    return (int.tryParse(parts[0]) ?? 0) * 60 + (int.tryParse(parts[1]) ?? 0);
+  }
+
+  DayOfWeek? _parseCsvDay(String raw) {
+    final clean = raw.trim().toLowerCase();
+    if (clean == 'monday' || clean == 'isnin' || clean == '0') return DayOfWeek.monday;
+    if (clean == 'tuesday' || clean == 'selasa' || clean == '1') return DayOfWeek.tuesday;
+    if (clean == 'wednesday' || clean == 'rabu' || clean == '2') return DayOfWeek.wednesday;
+    if (clean == 'thursday' || clean == 'khamis' || clean == '3') return DayOfWeek.thursday;
+    if (clean == 'friday' || clean == 'jumaat' || clean == '4') return DayOfWeek.friday;
+    return null;
+  }
+
+  TimetableSlotModel? _findConflictInLists(TimetableSlotModel candidate, List<TimetableSlotModel> list) {
+    for (final s in list) {
+      if (s.id == candidate.id) continue;
+      if (s.day != candidate.day) continue;
+
+      // Overlap: NOT (end1 <= start2 OR start1 >= end2)
+      final hasOverlap = !(candidate.endTime.compareTo(s.startTime) <= 0 ||
+          candidate.startTime.compareTo(s.endTime) >= 0);
+      if (!hasOverlap) continue;
+
+      // 1. Same venue conflict
+      if (s.venue.trim().toLowerCase() == candidate.venue.trim().toLowerCase()) {
+        return s;
+      }
+
+      // 2. Same lecturer conflict
+      final sameLecturer = (candidate.lecturerId.isNotEmpty && s.lecturerId.isNotEmpty && candidate.lecturerId == s.lecturerId) ||
+          (candidate.lecturerName.trim().toLowerCase() == s.lecturerName.trim().toLowerCase());
+      if (sameLecturer) {
+        return s;
+      }
+    }
+    return null;
   }
 
   void _snack(String msg, {bool error = false}) =>
@@ -171,7 +325,33 @@ class _UploadState extends State<UploadTimeScheduleView> {
             const SizedBox(height: 4),
             Text('Tambah slot jadual secara manual atau import CSV.',
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
-            const SizedBox(height: 28),
+            const SizedBox(height: 20),
+
+            // Dropdown Pilih Pensyarah Sasaran
+            _Card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _FieldLabel('Pilih Pensyarah Sasaran'),
+                  DropdownButtonFormField<String>(
+                    value: _selectedLecturerId,
+                    decoration: _dec('Pilih pensyarah untuk mula menjadualkan'),
+                    items: lecturers.map<DropdownMenuItem<String>>((l) => DropdownMenuItem<String>(
+                      value: l.id,
+                      child: Text(l.name),
+                    )).toList(),
+                    onChanged: (id) {
+                      final l = lecturers.firstWhere((x) => x.id == id);
+                      setState(() { 
+                        _selectedLecturerId = id; 
+                        _selectedLecturerName = l.name; 
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
 
             LayoutBuilder(builder: (_, c) {
               final wide = c.maxWidth >= 800;
@@ -228,19 +408,23 @@ class _UploadState extends State<UploadTimeScheduleView> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 20),
 
-          // Pensyarah dropdown
-          _FieldLabel('Pensyarah'),
-          DropdownButtonFormField<String>(
-            value: _selectedLecturerId,
-            decoration: _dec('Pilih pensyarah'),
-            items: lecturers.map<DropdownMenuItem<String>>((l) => DropdownMenuItem<String>(
-              value: l.id,
-              child: Text(l.name),
-            )).toList(),
-            onChanged: (id) {
-              final l = lecturers.firstWhere((x) => x.id == id);
-              setState(() { _selectedLecturerId = id; _selectedLecturerName = l.name; });
-            },
+          // Pensyarah display
+          _FieldLabel('Pensyarah Sasaran'),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Text(
+              _selectedLecturerName ?? 'Sila pilih pensyarah di menu atas',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: _selectedLecturerId == null ? Colors.red : const Color(0xFF1F2937),
+              ),
+            ),
           ),
           const SizedBox(height: 14),
 
@@ -272,6 +456,38 @@ class _UploadState extends State<UploadTimeScheduleView> {
             items: sectionsList.map<DropdownMenuItem<String>>((s) => DropdownMenuItem<String>(value: s, child: Text(s))).toList(),
             onChanged: _selectedCourseId == null ? null : (v) => setState(() => _selectedSection = v),
           ),
+          const SizedBox(height: 14),
+
+          // Semester & Sesi Akademik
+          Row(children: [
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _FieldLabel('Semester'),
+              DropdownButtonFormField<String>(
+                value: _selectedSemester,
+                decoration: _dec(''),
+                items: const [
+                  DropdownMenuItem(value: 'Semester 1', child: Text('Semester 1')),
+                  DropdownMenuItem(value: 'Semester 2', child: Text('Semester 2')),
+                  DropdownMenuItem(value: 'Semester 3', child: Text('Semester 3')),
+                ],
+                onChanged: (v) => setState(() => _selectedSemester = v!),
+              ),
+            ])),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _FieldLabel('Sesi Akademik'),
+              DropdownButtonFormField<String>(
+                value: _selectedSession,
+                decoration: _dec(''),
+                items: const [
+                  DropdownMenuItem(value: '2025/2026', child: Text('2025/2026')),
+                  DropdownMenuItem(value: '2026/2027', child: Text('2026/2027')),
+                  DropdownMenuItem(value: '2027/2028', child: Text('2027/2028')),
+                ],
+                onChanged: (v) => setState(() => _selectedSession = v!),
+              ),
+            ])),
+          ]),
           const SizedBox(height: 14),
 
           // Hari
@@ -359,7 +575,7 @@ class _UploadState extends State<UploadTimeScheduleView> {
         const Text('Muat naik CSV pukal',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
-        Text('Format: kod_kursus,hari,mula,tamat,bilik (hari = 0-4, Isn-Jum)',
+        Text('Format: course_code, course_name, day, start_time, end_time, venue, semester, academic_session',
             style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
         const SizedBox(height: 14),
         Container(
@@ -373,7 +589,7 @@ class _UploadState extends State<UploadTimeScheduleView> {
             maxLines: 9,
             style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
             decoration: const InputDecoration(
-              hintText: 'kod_kursus,hari,mula,tamat,bilik\nCS101,1,09:00,10:30,A201',
+              hintText: 'course_code,course_name,day,start_time,end_time,venue,semester,academic_session\nCS101,Software Engineering,Monday,09:00,10:30,A201,Semester 1,2025/2026',
               hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
               border: InputBorder.none,
               contentPadding: EdgeInsets.all(14),
@@ -678,11 +894,12 @@ class _SlotCard extends StatelessWidget {
                   ),
                 ]),
                 const SizedBox(height: 6),
-                Wrap(spacing: 14, children: [
+                Wrap(spacing: 14, runSpacing: 6, children: [
                   _Tag(Icons.access_time_rounded, '${slot.startTime} – ${slot.endTime}'),
                   _Tag(Icons.location_on_outlined, slot.venue),
                   _Tag(Icons.person_outline_rounded, slot.lecturerName),
                   _Tag(Icons.calendar_today_outlined, _dayLabels[slot.day.index]),
+                  _Tag(Icons.school_outlined, '${slot.semester} (${slot.session})'),
                 ]),
               ])),
               if (onDelete != null)

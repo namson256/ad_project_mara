@@ -58,8 +58,14 @@ class TimetableController extends ChangeNotifier {
     // Local conflict check before hitting Firestore
     final conflict = _findConflict(slot);
     if (conflict != null) {
-      return 'Time conflict with "${conflict.subject}" '
-          '(${conflict.startTime}–${conflict.endTime}) in ${conflict.venue}';
+      final isVenueConflict = conflict.venue.trim().toLowerCase() == slot.venue.trim().toLowerCase();
+      if (isVenueConflict) {
+        return 'Konflik masa dengan "${conflict.subject}" '
+            '(${conflict.startTime}–${conflict.endTime}) di ${conflict.venue}';
+      } else {
+        return 'Konflik pensyarah: "${conflict.lecturerName}" sudah dijadualkan untuk "${conflict.subject}" '
+            '(${conflict.startTime}–${conflict.endTime})';
+      }
     }
 
     _setLoading(true);
@@ -82,8 +88,14 @@ class TimetableController extends ChangeNotifier {
   Future<String?> updateSlot(TimetableSlotModel updated) async {
     final conflict = _findConflict(updated, excludeId: updated.id);
     if (conflict != null) {
-      return 'Time conflict with "${conflict.subject}" '
-          '(${conflict.startTime}–${conflict.endTime})';
+      final isVenueConflict = conflict.venue.trim().toLowerCase() == updated.venue.trim().toLowerCase();
+      if (isVenueConflict) {
+        return 'Konflik masa dengan "${conflict.subject}" '
+            '(${conflict.startTime}–${conflict.endTime})';
+      } else {
+        return 'Konflik pensyarah: "${conflict.lecturerName}" sudah dijadualkan untuk "${conflict.subject}" '
+            '(${conflict.startTime}–${conflict.endTime})';
+      }
     }
 
     _setLoading(true);
@@ -129,11 +141,23 @@ class TimetableController extends ChangeNotifier {
     for (final s in _slots) {
       if (s.id == excludeId) continue;
       if (s.day != candidate.day) continue;
-      if (s.venue != candidate.venue) continue;
+
       // Overlap: NOT (end1 <= start2 OR start1 >= end2)
-      final noOverlap = candidate.endTime.compareTo(s.startTime) <= 0 ||
-          candidate.startTime.compareTo(s.endTime) >= 0;
-      if (!noOverlap) return s;
+      final hasOverlap = !(candidate.endTime.compareTo(s.startTime) <= 0 ||
+          candidate.startTime.compareTo(s.endTime) >= 0);
+      if (!hasOverlap) continue;
+
+      // 1. Same venue conflict
+      if (s.venue.trim().toLowerCase() == candidate.venue.trim().toLowerCase()) {
+        return s;
+      }
+
+      // 2. Same lecturer conflict
+      final sameLecturer = (candidate.lecturerId.isNotEmpty && s.lecturerId.isNotEmpty && candidate.lecturerId == s.lecturerId) ||
+          (candidate.lecturerName.trim().toLowerCase() == s.lecturerName.trim().toLowerCase());
+      if (sameLecturer) {
+        return s;
+      }
     }
     return null;
   }

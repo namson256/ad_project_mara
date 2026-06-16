@@ -158,8 +158,8 @@ class _LecturerShellState extends State<LecturerShell> with SingleTickerProvider
                 _NavItem(
                   icon: Icons.calendar_month_outlined,
                   label: 'Slot Jadual',
-                  selected: false,
-                  onTap: () => context.go('/lecturer-dashboard'),
+                  selected: widget.currentRoute == '/lecturer-timetable',
+                  onTap: () => context.go('/lecturer-timetable'),
                 ),
                 _NavItem(
                   icon: Icons.event_available_outlined,

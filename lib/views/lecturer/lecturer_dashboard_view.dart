@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/timetable_controller.dart';
+import '../../models/timetable_slot_model.dart';
 import 'lecturer_shell.dart';
 
 /// LecturerDashboardView
@@ -26,6 +28,9 @@ class _LecturerDashboardViewState extends State<LecturerDashboardView>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TimetableController>().loadSlots();
+    });
   }
 
   @override
@@ -143,25 +148,81 @@ class _LecturerDashboardViewState extends State<LecturerDashboardView>
                   children: [
                     SizedBox(
                       width: leftWidth,
-                      child: const _PanelCard(
+                      child: _PanelCard(
                         title: 'Jadual Hari Ini',
-                        trailing: Text(
-                          'Lihat jadual',
-                          style: TextStyle(
-                            color: Color(0xFF8B1538),
-                            fontWeight: FontWeight.w600,
+                        trailing: InkWell(
+                          onTap: () => context.go('/lecturer-timetable'),
+                          child: const Text(
+                            'Lihat jadual',
+                            style: TextStyle(
+                              color: Color(0xFF8B1538),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         child: SizedBox(
                           height: 260,
-                          child: Center(
-                            child: Text(
-                              'Tiada kelas dijadualkan hari ini.',
-                              style: TextStyle(
-                                color: Color(0xFF6B7280),
-                                fontSize: 14,
-                              ),
-                            ),
+                          child: Builder(
+                            builder: (context) {
+                              final timetable = context.watch<TimetableController>();
+                              final now = DateTime.now();
+                              DayOfWeek? todayDay;
+                              switch (now.weekday) {
+                                case DateTime.monday:    todayDay = DayOfWeek.monday; break;
+                                case DateTime.tuesday:   todayDay = DayOfWeek.tuesday; break;
+                                case DateTime.wednesday: todayDay = DayOfWeek.wednesday; break;
+                                case DateTime.thursday:  todayDay = DayOfWeek.thursday; break;
+                                case DateTime.friday:    todayDay = DayOfWeek.friday; break;
+                              }
+
+                              final todaySlots = todayDay == null ? <TimetableSlotModel>[] : timetable.slots.where((s) {
+                                final isToday = s.day == todayDay;
+                                final matchId = user?.id.isNotEmpty == true && s.lecturerId == user?.id;
+                                final matchName = user?.name.isNotEmpty == true &&
+                                    s.lecturerName.trim().toLowerCase() == user?.name.trim().toLowerCase();
+                                return isToday && (matchId || matchName);
+                              }).toList()..sort((a, b) => a.startTime.compareTo(b.startTime));
+
+                              if (todaySlots.isEmpty) {
+                                return const Center(
+                                  child: Text(
+                                    'Tiada kelas dijadualkan hari ini.',
+                                    style: TextStyle(
+                                      color: Color(0xFF6B7280),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return ListView.builder(
+                                itemCount: todaySlots.length,
+                                itemBuilder: (_, i) {
+                                  final slot = todaySlots[i];
+                                  return Card(
+                                    elevation: 0,
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      side: const BorderSide(color: Color(0xFFE5E7EB)),
+                                    ),
+                                    color: const Color(0xFFF9FAFB),
+                                    child: ListTile(
+                                      dense: true,
+                                      leading: const Icon(Icons.menu_book_outlined, color: Color(0xFF8B1538)),
+                                      title: Text(
+                                        '${slot.subject} (${slot.section})',
+                                        style: const TextStyle(fontWeight: FontWeight.w700),
+                                      ),
+                                      subtitle: Text(
+                                        '${slot.startTime} – ${slot.endTime}  •  ${slot.venue}',
+                                        style: TextStyle(color: Color(0xFF6B7280)),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            }
                           ),
                         ),
                       ),
@@ -173,19 +234,23 @@ class _LecturerDashboardViewState extends State<LecturerDashboardView>
                         child: Column(
                           children: [
                             _QuickActionButton(
-                              label: 'Tanda kehadiran',
+                              label: 'Slot Jadual Waktu',
+                              onTap: () => context.go('/lecturer-timetable'),
+                            ),
+                            _QuickActionButton(
+                              label: 'Tanda Kehadiran',
                               onTap: () => _navigateWithLoading(context, '/lecturer-attendance'),
                             ),
                             _QuickActionButton(
-                              label: 'Lapor isu disiplin',
+                              label: 'Lapor Isu Disiplin',
                               onTap: () => context.go('/lecturer-isu-disiplin'),
                             ),
                             _QuickActionButton(
-                              label: 'Tempah kelas ganti',
-                              onTap: () => context.go('/lecturer-dashboard'),
+                              label: 'Tempah Kelas Ganti',
+                              onTap: () => context.go('/lecturer-booking'),
                             ),
                             _QuickActionButton(
-                              label: 'Lihat laporan',
+                              label: 'Lihat Laporan',
                               onTap: () => context.go('/lecturer-pelaporan'),
                             ),
                           ],
