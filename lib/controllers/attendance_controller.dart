@@ -1,5 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'discipline_controller.dart';
+import '../models/course_model.dart';
+import '../models/discipline_record_model.dart';
 import '../models/attendance_model.dart';
 
 class AttendanceController extends ChangeNotifier {
@@ -113,19 +117,23 @@ class AttendanceController extends ChangeNotifier {
   }
 
   /// Updates the status of [studentId] for [week] in [courseId].
-  Future<void> updateStatus(
+  Future<String?> updateStatus(
     String courseId,
     String studentId,
     int week,
     AttendanceStatus status,
-  ) async {
-    if (week < 1 || week > totalWeeks) return;
+    { // optional controller to handle discipline warnings
+    DisciplineController? disciplineController,
+    CourseModel? courseModel,
+  }
+   ) async {
+    if (week < 1 || week > totalWeeks) return null;
 
     final students = _courseAttendance[courseId];
-    if (students == null) return;
+    if (students == null) return null;
 
     final index = students.indexWhere((s) => s.id == studentId);
-    if (index == -1) return;
+    if (index == -1) return null;
 
     final student = students[index];
     final updatedStatus = Map<int, AttendanceStatus>.from(student.weeklyStatus);
@@ -143,8 +151,46 @@ class AttendanceController extends ChangeNotifier {
       await docRef.set({
         'students': students.map((s) => s.toMap()).toList()
       });
+      // After saving attendance, compute attendance percentage and optionally create/update warnings
+      final updatedStudent = students[index];
+      final pct = attendancePercentage(updatedStudent);
+      if (disciplineController != null && courseModel != null) {
+        int level = 0;
+        if (pct <= 80.0) {
+          level = 3;
+        } else if (pct <= 90.0) {
+          level = 2;
+        } else if (pct <= 95.0) {
+          level = 1;
+        }
+        // Only create/update warnings when a non-zero level is reached.
+        if (level > 0) {
+          // Call the discipline controller and return any error for the UI to show.
+          final err = await disciplineController.addOrUpdateAttendanceWarning(
+            studentId: updatedStudent.id,
+            studentName: updatedStudent.name,
+            matricNo: studentDetailsMap[updatedStudent.id]?['matric'] ?? '',
+            programme: studentDetailsMap[updatedStudent.id]?['program'] ?? '',
+            courseId: courseId,
+            courseCode: courseModel.code,
+            courseName: courseModel.name,
+            attendancePercentage: pct,
+            warningLevel: level,
+          );
+          if (err != null) {
+            debugPrint('Discipline warning write failed for $studentId in $courseId: $err');
+            return err;
+          } else {
+            debugPrint('Discipline warning created/updated for $studentId in $courseId (level $level)');
+            // signal to caller that a warning was created so UI can show a message
+            return 'warning-created';
+          }
+        }
+      }
+      return null;
     } catch (e) {
       debugPrint("Error saving attendance: \$e");
+      return e.toString();
     }
   }
 

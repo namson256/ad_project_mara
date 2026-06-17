@@ -147,6 +147,12 @@ class AdminShell extends StatelessWidget {
                           selected: currentRoute == '/admin/isu-disiplin',
                           onTap: () => context.go('/admin/isu-disiplin'),
                         ),
+                        _Item(
+                          icon: Icons.notifications_outlined,
+                          label: 'Notifikasi',
+                          selected: currentRoute == '/admin/pelaporan/notifikasi',
+                          onTap: () => context.go('/admin/pelaporan/notifikasi'),
+                        ),
 
 
                       ],

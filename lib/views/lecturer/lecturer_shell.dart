@@ -154,6 +154,12 @@ class _LecturerShellState extends State<LecturerShell> with SingleTickerProvider
                   selected: widget.currentRoute == '/lecturer-isu-disiplin',
                   onTap: () => context.go('/lecturer-isu-disiplin'),
                 ),
+                _NavItem(
+                  icon: Icons.notifications_outlined,
+                  label: 'Notifikasi',
+                  selected: widget.currentRoute == '/lecturer-pelaporan/notifikasi',
+                  onTap: () => context.go('/lecturer-pelaporan/notifikasi'),
+                ),
                 const _SectionLabel(label: 'JADUAL'),
                 _NavItem(
                   icon: Icons.calendar_month_outlined,

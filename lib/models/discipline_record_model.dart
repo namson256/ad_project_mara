@@ -115,6 +115,8 @@ class DisciplineRecord {
   final bool isAutoDetected;
   final double? attendancePercentage;
   final String? catatan; // Remarks/notes by lecturer or admin
+  final int? warningLevel; // 1,2,3
+  final String? warningLabel; // Amaran Pertama/Kedua/Ketiga
 
   DisciplineRecord({
     required this.id,
@@ -132,6 +134,8 @@ class DisciplineRecord {
     this.isAutoDetected = false,
     this.attendancePercentage,
     this.catatan,
+    this.warningLevel,
+    this.warningLabel,
   });
 
   Map<String, dynamic> toMap() {
@@ -149,6 +153,8 @@ class DisciplineRecord {
       'reportedBy': reportedBy,
       'isAutoDetected': isAutoDetected,
       'attendancePercentage': attendancePercentage,
+      'warningLevel': warningLevel,
+      'warningLabel': warningLabel,
       if (catatan != null) 'catatan': catatan,
     };
   }
@@ -182,6 +188,8 @@ class DisciplineRecord {
           ? (data['attendancePercentage'] as num).toDouble()
           : null,
       catatan: data['catatan'] as String?,
+      warningLevel: data['warningLevel'] as int?,
+      warningLabel: data['warningLabel'] as String?,
     );
   }
 
@@ -202,6 +210,8 @@ class DisciplineRecord {
     double? attendancePercentage,
     String? catatan,
     bool clearCatatan = false,
+    int? warningLevel,
+    String? warningLabel,
   }) {
     return DisciplineRecord(
       id: id ?? this.id,
@@ -219,6 +229,8 @@ class DisciplineRecord {
       isAutoDetected: isAutoDetected ?? this.isAutoDetected,
       attendancePercentage: attendancePercentage ?? this.attendancePercentage,
       catatan: clearCatatan ? null : (catatan ?? this.catatan),
+      warningLevel: warningLevel ?? this.warningLevel,
+      warningLabel: warningLabel ?? this.warningLabel,
     );
   }
 }

@@ -12,12 +12,14 @@ class UserModel {
   final String name;
   final String email;
   final UserRole role;
+  final String? jawatan;
 
   const UserModel({
     required this.id,
     required this.name,
     required this.email,
     required this.role,
+    this.jawatan,
   });
 
   /// Convenience helpers for guards & UI.
@@ -31,12 +33,14 @@ class UserModel {
     String? name,
     String? email,
     UserRole? role,
+    String? jawatan,
   }) {
     return UserModel(
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
       role: role ?? this.role,
+      jawatan: jawatan ?? this.jawatan,
     );
   }
 
@@ -46,6 +50,7 @@ class UserModel {
         'name': name,
         'email': email,
         'role': role.name,
+        if (jawatan != null) 'jawatan': jawatan,
       };
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -53,6 +58,7 @@ class UserModel {
         name: json['name'] as String,
         email: json['email'] as String,
         role: _parseRole(json['role'] as String),
+        jawatan: json['jawatan'] as String?,
       );
 
   /// Create a UserModel from a Firestore document snapshot.
@@ -63,6 +69,7 @@ class UserModel {
       name: data['name'] as String? ?? '',
       email: data['email'] as String? ?? '',
       role: _parseRole(data['role'] as String? ?? 'pensyarah'),
+      jawatan: data['jawatan'] as String?,
     );
   }
 
