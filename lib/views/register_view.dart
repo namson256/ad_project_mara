@@ -20,6 +20,7 @@ class _RegisterViewState extends State<RegisterView> {
   final _confirmPasswordCtrl = TextEditingController();
 
   UserRole _selectedRole = UserRole.pensyarah;
+  String _selectedJawatan = 'Ketua Program';
   bool _loading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
@@ -49,6 +50,7 @@ class _RegisterViewState extends State<RegisterView> {
       email: _emailCtrl.text,
       password: _passwordCtrl.text,
       role: _selectedRole,
+      jawatan: _selectedRole == UserRole.ketuaProgram ? _selectedJawatan : null,
     );
 
     if (!mounted) return;
@@ -372,7 +374,7 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                       DropdownMenuItem(
                         value: UserRole.ketuaProgram,
-                        child: Text('Ketua Program'),
+                        child: Text('Ketua'),
                       ),
                     ],
                     onChanged: (role) {
@@ -381,6 +383,47 @@ class _RegisterViewState extends State<RegisterView> {
                       }
                     },
                   ),
+                  if (_selectedRole == UserRole.ketuaProgram) ...[
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _selectedJawatan,
+                      decoration: InputDecoration(
+                        labelText: 'Jawatan',
+                        prefixIcon: const Icon(Icons.assignment_ind_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF8B1538), width: 2),
+                        ),
+                        floatingLabelStyle: const TextStyle(color: Color(0xFF8B1538)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Ketua Program',
+                          child: Text('Ketua Program'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Ketua Jabatan',
+                          child: Text('Ketua Jabatan'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Timbalan Pengarah Akademik',
+                          child: Text('Timbalan Pengarah Akademik'),
+                        ),
+                      ],
+                      onChanged: (jawatan) {
+                        if (jawatan != null) {
+                          setState(() => _selectedJawatan = jawatan);
+                        }
+                      },
+                    ),
+                  ],
 
                   // Error message
                   if (_errorMessage != null) ...[

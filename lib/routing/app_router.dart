@@ -14,6 +14,7 @@ import '../views/senarai_kursus_view.dart';
 import '../views/admin/urus_pengguna_view.dart';
 import '../views/laporan/pelaporan_view.dart';
 import '../views/laporan/isu_disiplin_view.dart';
+import '../views/laporan/notifikasi_view.dart';
 import '../views/lecturer/lecturer_booking_view.dart';
 import '../views/ketua/ketua_booking_view.dart';
 
@@ -66,6 +67,11 @@ class AppRouter {
         builder: (context, state) => const PelaporanView(),
       ),
       GoRoute(
+        path: '/admin/pelaporan/notifikasi',
+        name: 'admin-notifikasi',
+        builder: (context, state) => const NotifikasiView(),
+      ),
+      GoRoute(
         path: '/admin/isu-disiplin',
         name: 'admin-isu-disiplin',
         builder: (context, state) => const IsuDisiplinView(),
@@ -86,6 +92,11 @@ class AppRouter {
         path: '/lecturer-pelaporan',
         name: 'lecturer-pelaporan',
         builder: (context, state) => const PelaporanView(),
+      ),
+      GoRoute(
+        path: '/lecturer-pelaporan/notifikasi',
+        name: 'lecturer-notifikasi',
+        builder: (context, state) => const NotifikasiView(),
       ),
       GoRoute(
         path: '/lecturer-isu-disiplin',
@@ -113,6 +124,11 @@ class AppRouter {
         path: '/ketua-pelaporan',
         name: 'ketua-pelaporan',
         builder: (context, state) => const PelaporanView(),
+      ),
+      GoRoute(
+        path: '/ketua-pelaporan/notifikasi',
+        name: 'ketua-notifikasi',
+        builder: (context, state) => const NotifikasiView(),
       ),
       GoRoute(
         path: '/ketua-isu-disiplin',

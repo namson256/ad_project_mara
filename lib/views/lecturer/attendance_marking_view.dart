@@ -7,6 +7,7 @@ import '../../controllers/course_controller.dart';
 import '../../models/attendance_model.dart';
 import '../../models/course_model.dart';
 import 'lecturer_shell.dart';
+import '../../controllers/discipline_controller.dart';
 
 class AttendanceMarkingView extends StatefulWidget {
   const AttendanceMarkingView({super.key});
@@ -724,14 +725,29 @@ class _AttendanceCell extends StatelessWidget {
                 ),
               )
               .toList(),
-          onChanged: (value) {
+          onChanged: (value) async {
             if (value == null) return;
-            context.read<AttendanceController>().updateStatus(
-                  courseId,
-                  studentId,
-                  week,
-                  value,
-                );
+            final disciplineCtrl = context.read<DisciplineController>();
+            final courseCtrl = context.read<CourseController>();
+            final course = courseCtrl.courses.firstWhere((c) => c.id == courseId);
+            final result = await context.read<AttendanceController>().updateStatus(
+              courseId,
+              studentId,
+              week,
+              value,
+              disciplineController: disciplineCtrl,
+              courseModel: course,
+            );
+            // If a warning was created, show a SnackBar to the user immediately
+            if (result == 'warning-created') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Amaran kehadiran dikesan dan notifikasi telah dicipta.'), duration: Duration(seconds: 3)),
+              );
+            } else if (result != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Gagal menyimpan kehadiran: $result'), backgroundColor: Colors.redAccent, duration: Duration(seconds: 4)),
+              );
+            }
           },
         ),
       ),

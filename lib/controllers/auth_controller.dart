@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import '../models/user_model.dart';
 
 /// AuthController
@@ -85,6 +84,7 @@ class AuthController extends ChangeNotifier {
     required String email,
     required String password,
     required UserRole role,
+    String? jawatan,
   }) async {
     _loading = true;
     notifyListeners();
@@ -102,6 +102,7 @@ class AuthController extends ChangeNotifier {
         'name': name.trim(),
         'email': email.trim().toLowerCase(),
         'role': role.name, // 'pensyarah', 'staff', or 'ketuaProgram'
+        if (role == UserRole.ketuaProgram && jawatan != null) 'jawatan': jawatan,
         'createdAt': FieldValue.serverTimestamp(),
       };
 
@@ -112,6 +113,7 @@ class AuthController extends ChangeNotifier {
         name: name.trim(),
         email: email.trim().toLowerCase(),
         role: role,
+        jawatan: role == UserRole.ketuaProgram ? jawatan : null,
       );
 
       _loading = false;

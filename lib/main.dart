@@ -9,6 +9,8 @@ import 'controllers/timetable_controller.dart';
 import 'controllers/course_controller.dart';
 import 'controllers/discipline_controller.dart';
 import 'controllers/booking_controller.dart';
+import 'controllers/notification_controller.dart';
+import 'controllers/email_controller.dart';
 import 'routing/app_router.dart';
 
 void main() async {
@@ -33,6 +35,8 @@ class LecturerPortalApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CourseController()),
         ChangeNotifierProvider(create: (_) => DisciplineController()),
         ChangeNotifierProvider(create: (_) => BookingController()),
+        ChangeNotifierProvider(create: (_) => NotificationController()),
+        ChangeNotifierProvider(create: (_) => EmailHistoryController()),
       ],
       child: Builder(
         builder: (context) {
