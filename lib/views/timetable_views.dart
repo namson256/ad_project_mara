@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:go_router/go_router.dart';
 import '../../controllers/timetable_controller.dart';
 import '../../controllers/admin_controller.dart';
 import '../../controllers/course_controller.dart';
@@ -21,7 +24,9 @@ class UploadTimeScheduleView extends StatefulWidget {
 class _UploadState extends State<UploadTimeScheduleView> {
   final _formKey    = GlobalKey<FormState>();
   final _venueCtrl  = TextEditingController();
-  final _csvCtrl    = TextEditingController();
+
+  PlatformFile? _selectedFile;
+  bool _isUploading = false;
 
   String? _selectedLecturerId;
   String? _selectedLecturerName;
@@ -47,7 +52,6 @@ class _UploadState extends State<UploadTimeScheduleView> {
   @override
   void dispose() {
     _venueCtrl.dispose();
-    _csvCtrl.dispose();
     super.dispose();
   }
 
@@ -116,9 +120,42 @@ class _UploadState extends State<UploadTimeScheduleView> {
     }
   }
 
+  Future<void> _pickFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        withData: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        if (file.name.toLowerCase().endsWith('.csv')) {
+          setState(() {
+            _selectedFile = file;
+          });
+        } else {
+          _snack('Muat Naik Gagal: Hanya fail CSV dibenarkan.', error: true);
+        }
+      }
+    } catch (e) {
+      _snack('Muat Naik Gagal: Ralat memilih fail: $e', error: true);
+    }
+  }
+
+  void _clearFile() {
+    setState(() {
+      _selectedFile = null;
+    });
+  }
+
   Future<void> _importCsv() async {
     if (_selectedLecturerId == null) {
-      _snack('Sila pilih pensyarah terlebih dahulu sebelum memuat naik CSV.', error: true);
+      _snack('Muat Naik Gagal: Sila pilih pensyarah terlebih dahulu sebelum memuat naik CSV.', error: true);
+      return;
+    }
+    if (_selectedFile == null) {
+      _snack('Muat Naik Gagal: Sila pilih fail CSV terlebih dahulu.', error: true);
       return;
     }
 
@@ -126,38 +163,87 @@ class _UploadState extends State<UploadTimeScheduleView> {
     final timetableCtrl = context.read<TimetableController>();
     final existingSlots = timetableCtrl.slots;
 
-    final lines = _csvCtrl.text.trim().split('\n');
-    if (lines.isEmpty || (lines.length == 1 && lines[0].trim().isEmpty)) {
-      _snack('Sila masukkan kandungan CSV.', error: true);
+    final bytes = _selectedFile!.bytes;
+    if (bytes == null) {
+      _snack('Muat Naik Gagal: Kandungan fail tidak dapat dibaca.', error: true);
       return;
     }
 
-    // Accumulator for successful slots to be added
+    String csvContent;
+    try {
+      csvContent = utf8.decode(bytes);
+    } catch (e) {
+      _snack('Muat Naik Gagal: Gagal menyahkod kandungan fail CSV.', error: true);
+      return;
+    }
+
+    final lines = csvContent.split(RegExp(r'\r?\n')).map((line) => line.trim()).toList();
+    lines.removeWhere((line) => line.isEmpty);
+
+    if (lines.isEmpty) {
+      _snack('Muat Naik Gagal: Fail CSV kosong.', error: true);
+      return;
+    }
+
+    // Validate headers
+    final headerLine = lines[0];
+    final headers = headerLine.split(',').map((h) => h.trim().toLowerCase()).toList();
+
+    final requiredColumns = [
+      'course_code',
+      'course_name',
+      'day',
+      'start_time',
+      'end_time',
+      'venue',
+      'semester',
+      'academic_session'
+    ];
+
+    for (final col in requiredColumns) {
+      if (!headers.contains(col)) {
+        _snack('Muat Naik Gagal: Lajur wajib "$col" tidak ditemui dalam fail CSV.', error: true);
+        return;
+      }
+    }
+
+    final courseCodeIdx = headers.indexOf('course_code');
+    final courseNameIdx = headers.indexOf('course_name');
+    final dayIdx = headers.indexOf('day');
+    final startTimeIdx = headers.indexOf('start_time');
+    final endTimeIdx = headers.indexOf('end_time');
+    final venueIdx = headers.indexOf('venue');
+    final semesterIdx = headers.indexOf('semester');
+    final sessionIdx = headers.indexOf('academic_session');
+
     final List<TimetableSlotModel> batchSlots = [];
 
     // Parse each line and validate
-    for (int i = 0; i < lines.length; i++) {
+    for (int i = 1; i < lines.length; i++) {
       final line = lines[i].trim();
       if (line.isEmpty) continue;
 
-      // Skip CSV header if present (e.g. course_code, course_name, day, ...)
-      if (i == 0 && line.toLowerCase().contains('course_code')) {
-        continue;
-      }
-
       final p = line.split(',');
-      if (p.length < 8) {
-        _snack('Baris ${i + 1}: Lajur tidak mencukupi (mesti ada 8 lajur).', error: true);
+      if (p.length < headers.length) {
+        _snack('Muat Naik Gagal: Baris ${i + 1} tidak mempunyai lajur yang mencukupi.', error: true);
         return;
       }
 
-      final courseCode = p[0].trim().toUpperCase();
-      final rawDay = p[2].trim();
-      final startTimeStr = p[3].trim(); // "HH:mm"
-      final endTimeStr = p[4].trim();   // "HH:mm"
-      final venue = p[5].trim();
-      final semester = p[6].trim();
-      final academicSession = p[7].trim();
+      final courseCode = p[courseCodeIdx].trim().toUpperCase();
+      final courseNameVal = p[courseNameIdx].trim();
+      final rawDay = p[dayIdx].trim();
+      final startTimeStr = p[startTimeIdx].trim(); // "HH:mm"
+      final endTimeStr = p[endTimeIdx].trim();   // "HH:mm"
+      final venue = p[venueIdx].trim();
+      final semester = p[semesterIdx].trim();
+      final academicSession = p[sessionIdx].trim();
+
+      if (courseCode.isEmpty || courseNameVal.isEmpty || rawDay.isEmpty ||
+          startTimeStr.isEmpty || endTimeStr.isEmpty || venue.isEmpty ||
+          semester.isEmpty || academicSession.isEmpty) {
+        _snack('Muat Naik Gagal: Baris ${i + 1} mengandungi maklumat kosong.', error: true);
+        return;
+      }
 
       // 1. Verify course exists
       final course = courses.firstWhere(
@@ -165,14 +251,14 @@ class _UploadState extends State<UploadTimeScheduleView> {
         orElse: () => const CourseModel(id: '', code: '', name: '', lecturerId: '', lecturerName: '', department: '', sections: 1),
       );
       if (course.id.isEmpty) {
-        _snack('Baris ${i + 1}: Kod kursus "$courseCode" tidak wujud dalam Senarai Kursus.', error: true);
+        _snack('Muat Naik Gagal: Kod kursus "$courseCode" tidak wujud dalam Senarai Kursus.', error: true);
         return;
       }
 
       // 2. Parse and verify day
       final parsedDay = _parseCsvDay(rawDay);
       if (parsedDay == null) {
-        _snack('Baris ${i + 1}: Hari "$rawDay" tidak sah (mesti Isnin-Jumaat).', error: true);
+        _snack('Muat Naik Gagal: Hari "$rawDay" pada baris ${i + 1} tidak sah.', error: true);
         return;
       }
 
@@ -180,7 +266,7 @@ class _UploadState extends State<UploadTimeScheduleView> {
       final sm = _toMinutes(startTimeStr);
       final em = _toMinutes(endTimeStr);
       if (em <= sm) {
-        _snack('Baris ${i + 1}: Waktu tamat ($endTimeStr) mesti selepas waktu mula ($startTimeStr).', error: true);
+        _snack('Muat Naik Gagal: Masa mula mesti lebih awal daripada masa tamat pada baris ${i + 1}.', error: true);
         return;
       }
 
@@ -200,28 +286,27 @@ class _UploadState extends State<UploadTimeScheduleView> {
         session: academicSession,
       );
 
-      // 4. Prevent duplicate / time conflict
-      // Check against existing database slots
-      final dbConflict = _findConflictInLists(slot, existingSlots);
-      if (dbConflict != null) {
-        final isVenueConflict = dbConflict.venue.trim().toLowerCase() == slot.venue.trim().toLowerCase();
-        if (isVenueConflict) {
-          _snack('Baris ${i + 1}: Konflik tempat dengan "${dbConflict.subject}" (${dbConflict.startTime}–${dbConflict.endTime}) di ${dbConflict.venue}.', error: true);
-        } else {
-          _snack('Baris ${i + 1}: Konflik pensyarah dengan "${dbConflict.subject}" (${dbConflict.startTime}–${dbConflict.endTime}).', error: true);
-        }
+      // 4. Prevent duplicate record
+      final isDbDuplicate = _checkIsDuplicate(slot, existingSlots);
+      if (isDbDuplicate) {
+        _snack('Rekod jadual telah wujud.', error: true);
+        return;
+      }
+      final isBatchDuplicate = _checkIsDuplicate(slot, batchSlots);
+      if (isBatchDuplicate) {
+        _snack('Rekod jadual telah wujud.', error: true);
         return;
       }
 
-      // Check against batch slots (to prevent self-conflicts within the CSV upload)
-      final batchConflict = _findConflictInLists(slot, batchSlots);
+      // 5. Prevent time conflict for the same lecturer
+      final dbConflict = _findLecturerConflict(slot, existingSlots);
+      if (dbConflict != null) {
+        _snack('Pertindihan Masa Dikesan.', error: true);
+        return;
+      }
+      final batchConflict = _findLecturerConflict(slot, batchSlots);
       if (batchConflict != null) {
-        final isVenueConflict = batchConflict.venue.trim().toLowerCase() == slot.venue.trim().toLowerCase();
-        if (isVenueConflict) {
-          _snack('Baris ${i + 1}: Konflik tempat sesama CSV dengan "${batchConflict.subject}" (${batchConflict.startTime}–${batchConflict.endTime}) di ${batchConflict.venue}.', error: true);
-        } else {
-          _snack('Baris ${i + 1}: Konflik pensyarah sesama CSV dengan "${batchConflict.subject}" (${batchConflict.startTime}–${batchConflict.endTime}).', error: true);
-        }
+        _snack('Pertindihan Masa Dikesan.', error: true);
         return;
       }
 
@@ -229,21 +314,23 @@ class _UploadState extends State<UploadTimeScheduleView> {
     }
 
     // If all pass validation, add them to DB!
-    setState(() => _saving = true);
+    setState(() => _isUploading = true);
     int successfullyAdded = 0;
     for (final slot in batchSlots) {
       final err = await timetableCtrl.addSlot(slot);
       if (err == null) {
         successfullyAdded++;
       } else {
-        _snack('Ralat semasa menyimpan ke pangkalan data: $err', error: true);
-        setState(() => _saving = false);
+        _snack('Muat Naik Gagal: Ralat semasa menyimpan ke pangkalan data: $err', error: true);
+        setState(() => _isUploading = false);
         return;
       }
     }
-    setState(() => _saving = false);
-    _csvCtrl.clear();
-    _snack('$successfullyAdded slot berjaya dimuat naik untuk $_selectedLecturerName.');
+    setState(() {
+      _isUploading = false;
+      _selectedFile = null;
+    });
+    _snack('Muat Naik Berjaya: $successfullyAdded slot telah disimpan.');
   }
 
   int _toMinutes(String hhmm) {
@@ -262,27 +349,25 @@ class _UploadState extends State<UploadTimeScheduleView> {
     return null;
   }
 
-  TimetableSlotModel? _findConflictInLists(TimetableSlotModel candidate, List<TimetableSlotModel> list) {
+  bool _checkIsDuplicate(TimetableSlotModel a, List<TimetableSlotModel> list) {
+    return list.any((s) =>
+        s.lecturerId == a.lecturerId &&
+        s.courseId == a.courseId &&
+        s.day == a.day &&
+        s.startTime == a.startTime &&
+        s.endTime == a.endTime);
+  }
+
+  TimetableSlotModel? _findLecturerConflict(TimetableSlotModel a, List<TimetableSlotModel> list) {
     for (final s in list) {
-      if (s.id == candidate.id) continue;
-      if (s.day != candidate.day) continue;
+      if (s.id == a.id) continue;
+      if (s.lecturerId != a.lecturerId) continue;
+      if (s.day != a.day) continue;
 
       // Overlap: NOT (end1 <= start2 OR start1 >= end2)
-      final hasOverlap = !(candidate.endTime.compareTo(s.startTime) <= 0 ||
-          candidate.startTime.compareTo(s.endTime) >= 0);
-      if (!hasOverlap) continue;
-
-      // 1. Same venue conflict
-      if (s.venue.trim().toLowerCase() == candidate.venue.trim().toLowerCase()) {
-        return s;
-      }
-
-      // 2. Same lecturer conflict
-      final sameLecturer = (candidate.lecturerId.isNotEmpty && s.lecturerId.isNotEmpty && candidate.lecturerId == s.lecturerId) ||
-          (candidate.lecturerName.trim().toLowerCase() == s.lecturerName.trim().toLowerCase());
-      if (sameLecturer) {
-        return s;
-      }
+      final hasOverlap = !(a.endTime.compareTo(s.startTime) <= 0 ||
+          a.startTime.compareTo(s.endTime) >= 0);
+      if (hasOverlap) return s;
     }
     return null;
   }
@@ -571,52 +656,135 @@ class _UploadState extends State<UploadTimeScheduleView> {
 
   Widget _buildCsv() {
     return _Card(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Muat naik CSV pukal',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 6),
-        Text('Format: course_code, course_name, day, start_time, end_time, venue, semester, academic_session',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-        const SizedBox(height: 14),
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Muat Naik Jadual',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
-          child: TextField(
-            controller: _csvCtrl,
-            maxLines: 9,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
-            decoration: const InputDecoration(
-              hintText: 'course_code,course_name,day,start_time,end_time,venue,semester,academic_session\nCS101,Software Engineering,Monday,09:00,10:30,A201,Semester 1,2025/2026',
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.all(14),
+          const SizedBox(height: 6),
+          Text(
+            'Format lajur wajib: course_code, course_name, day, start_time, end_time, venue, semester, academic_session',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+          ),
+          const SizedBox(height: 20),
+          
+          // File selector section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Column(
+              children: [
+                if (_selectedFile == null) ...[
+                  Icon(Icons.upload_file_rounded, size: 48, color: Colors.grey[400]),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Tiada fail dipilih',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  ElevatedButton(
+                    onPressed: _pickFile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE5E7EB),
+                      foregroundColor: const Color(0xFF374151),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    child: const Text('Pilih Fail CSV', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ] else ...[
+                  Icon(Icons.insert_drive_file_rounded, size: 48, color: const Color(0xFF8B1538)),
+                  const SizedBox(height: 12),
+                  Text(
+                    _selectedFile!.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${(_selectedFile!.size / 1024).toStringAsFixed(1)} KB',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: _pickFile,
+                        icon: const Icon(Icons.refresh_rounded, size: 16),
+                        label: const Text('Tukar Fail'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF4B5563),
+                          side: const BorderSide(color: Color(0xFFD1D5DB)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      IconButton(
+                        onPressed: _clearFile,
+                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+                        tooltip: 'Padam',
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton.icon(
-            onPressed: _importCsv,
-            icon: const Icon(Icons.upload_outlined, size: 18),
-            label: const Text('Import CSV',
-                style: TextStyle(fontWeight: FontWeight.w700)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF111827),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4)),
+          
+          const SizedBox(height: 20),
+          
+          // Action button
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: (_isUploading || _selectedFile == null) ? null : _importCsv,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF8B1538), // MARA Maroon
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                disabledBackgroundColor: Colors.grey[300],
+              ),
+              child: _isUploading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text(
+                      'Muat Naik',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        Text('Tip: Pastikan kod kursus wujud dalam Senarai Kursus.',
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 11)),
-      ]),
+          
+          const SizedBox(height: 10),
+          Text(
+            'Tip: Pastikan kod kursus wujud dalam Senarai Kursus.',
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+          ),
+        ],
+      ),
     );
   }
 
@@ -641,150 +809,218 @@ class ShowTimetableSlotView extends StatefulWidget {
   State<ShowTimetableSlotView> createState() => _ShowState();
 }
 
-class _ShowState extends State<ShowTimetableSlotView>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabCtrl;
-  final _searchCtrl = TextEditingController();
-  String _query = '';
-
-  static const _dayLabels = ['Isnin','Selasa','Rabu','Khamis','Jumaat'];
-
-  int get _todayIndex {
-    final wd = DateTime.now().weekday;
-    return (wd >= 1 && wd <= 5) ? wd - 1 : 0;
-  }
+class _ShowState extends State<ShowTimetableSlotView> {
+  String? _selectedLecturerId;
+  String? _selectedLecturerName;
+  String _selectedDayFilter = 'Semua';
 
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(
-        length: DayOfWeek.values.length, vsync: this, initialIndex: _todayIndex);
-    _searchCtrl.addListener(() => setState(() => _query = _searchCtrl.text));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TimetableController>().loadSlots();
+      context.read<AdminController>().loadLecturers();
+      context.read<CourseController>().loadCourses();
     });
   }
 
   @override
-  void dispose() { _tabCtrl.dispose(); _searchCtrl.dispose(); super.dispose(); }
-
-  List<TimetableSlotModel> _filtered(TimetableController ctrl, DayOfWeek day) {
-    var list = ctrl.slotsForDay(day);
-    if (_query.trim().isNotEmpty) {
-      final q = _query.toLowerCase();
-      list = list.where((s) =>
-          s.subject.toLowerCase().contains(q) ||
-          s.lecturerName.toLowerCase().contains(q) ||
-          s.venue.toLowerCase().contains(q)).toList();
-    }
-    return list;
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final lecturers = context.watch<AdminController>().lecturers;
+    final courses = context.watch<CourseController>().courses;
+    final timetableCtrl = context.watch<TimetableController>();
+
+    final List<TimetableSlotModel> displaySlots;
+    if (_selectedLecturerId != null) {
+      displaySlots = timetableCtrl.slots
+          .where((s) => s.lecturerId == _selectedLecturerId)
+          .toList();
+    } else {
+      displaySlots = [];
+    }
+
     return AdminShell(
       currentRoute: '/admin/jadual',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(28, 28, 28, 0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Slot Jadual Waktu',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 4),
-              Text('Lihat semua slot jadual mengikut hari.',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: 400,
-                child: TextField(
-                  controller: _searchCtrl,
-                  decoration: InputDecoration(
-                    hintText: 'Cari subjek, pensyarah, tempat…',
-                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                    suffixIcon: _query.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, size: 18),
-                            onPressed: () => _searchCtrl.clear())
-                        : null,
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
-                  ),
+            padding: const EdgeInsets.fromLTRB(28, 28, 28, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Jadual Waktu Pensyarah',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
                 ),
-              ),
-              const SizedBox(height: 12),
-            ]),
-          ),
-          Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabCtrl,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              indicatorColor: const Color(0xFF8B1538),
-              indicatorWeight: 2,
-              labelColor: const Color(0xFF8B1538),
-              unselectedLabelColor: Colors.grey,
-              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              tabs: List.generate(DayOfWeek.values.length, (i) {
-                final isToday = i == _todayIndex;
-                return Tab(
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Text(_dayLabels[i]),
-                    if (isToday) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF8B1538),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text('HARI INI',
-                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white)),
+                const SizedBox(height: 4),
+                Text(
+                  'Lihat keseluruhan jadual mingguan mengikut pensyarah.',
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                ),
+                const SizedBox(height: 24),
+
+                // Controls row
+                LayoutBuilder(builder: (context, constraints) {
+                  final wide = constraints.maxWidth >= 600;
+                  final children = [
+                    // Lecturer selector dropdown
+                    SizedBox(
+                      width: wide ? (constraints.maxWidth - 16) * 0.6 : double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _FieldLabel('Pilih Pensyarah'),
+                          DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            value: _selectedLecturerId,
+                            decoration: const InputDecoration(
+                              hintText: 'Pilih pensyarah untuk dipaparkan',
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            items: lecturers.map((l) => DropdownMenuItem(
+                              value: l.id,
+                              child: Text(l.name),
+                            )).toList(),
+                            onChanged: (id) {
+                              if (id != null) {
+                                final l = lecturers.firstWhere((x) => x.id == id);
+                                setState(() {
+                                  _selectedLecturerId = id;
+                                  _selectedLecturerName = l.name;
+                                });
+                              }
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ]),
-                );
-              }),
-            ),
-          ),
-          Expanded(
-            child: Consumer<TimetableController>(builder: (_, ctrl, __) {
-              if (ctrl.isLoading) return const Center(child: CircularProgressIndicator());
-              return TabBarView(
-                controller: _tabCtrl,
-                children: DayOfWeek.values.map((day) {
-                  final slots = _filtered(ctrl, day);
-                  if (slots.isEmpty) {
-                    return Center(
-                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.event_busy_outlined, size: 48, color: Colors.grey[300]),
-                        const SizedBox(height: 12),
-                        Text(
-                          _query.isNotEmpty ? 'Tiada hasil ditemui' : 'Tiada kelas pada hari ini',
-                          style: TextStyle(color: Colors.grey[500], fontSize: 15),
-                        ),
-                      ]),
+                    ),
+                    if (!wide) const SizedBox(height: 16),
+                    // Day filter dropdown
+                    SizedBox(
+                      width: wide ? (constraints.maxWidth - 16) * 0.4 : double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _FieldLabel('Tapis Hari'),
+                          DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            value: _selectedDayFilter,
+                            decoration: const InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'Semua', child: Text('Semua Hari')),
+                              DropdownMenuItem(value: 'Isnin', child: Text('Isnin')),
+                              DropdownMenuItem(value: 'Selasa', child: Text('Selasa')),
+                              DropdownMenuItem(value: 'Rabu', child: Text('Rabu')),
+                              DropdownMenuItem(value: 'Khamis', child: Text('Khamis')),
+                              DropdownMenuItem(value: 'Jumaat', child: Text('Jumaat')),
+                            ],
+                            onChanged: (v) {
+                              if (v != null) {
+                                setState(() {
+                                  _selectedDayFilter = v;
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ];
+
+                  if (wide) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: children,
+                    );
+                  } else {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: children,
                     );
                   }
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: slots.length,
-                    itemBuilder: (_, i) => _SlotCard(slot: slots[i]),
-                  );
-                }).toList(),
-              );
-            }),
+                }),
+              ],
+            ),
+          ),
+
+          // Main schedule area
+          Expanded(
+            child: Container(
+              color: Colors.white,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: timetableCtrl.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(Color(0xFF8B1538)),
+                      ),
+                    )
+                  : _selectedLecturerId == null
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.calendar_today_rounded, size: 64, color: Colors.grey[300]),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Pilih Pensyarah',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF4B5563),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Sila pilih pensyarah daripada senarai di atas untuk melihat jadual waktu mingguan.',
+                                style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        )
+                      : SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Paparan Mingguan: $_selectedLecturerName',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF111827),
+                                    ),
+                                  ),
+                                  // Back button
+                                  TextButton.icon(
+                                    onPressed: () => context.go('/admin'),
+                                    icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                                    label: const Text('Kembali'),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(0xFF8B1538),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              JadualWaktuGrid(
+                                slots: displaySlots,
+                                courses: courses,
+                                selectedDayFilter: _selectedDayFilter,
+                              ),
+                            ],
+                          ),
+                        ),
+            ),
           ),
         ],
       ),
@@ -926,4 +1162,304 @@ class _Tag extends StatelessWidget {
     const SizedBox(width: 4),
     Text(text, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
   ]);
+}
+
+class JadualWaktuGrid extends StatelessWidget {
+  final List<TimetableSlotModel> slots;
+  final List<CourseModel> courses;
+  final String selectedDayFilter; // 'Semua', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'
+
+  const JadualWaktuGrid({
+    super.key,
+    required this.slots,
+    required this.courses,
+    required this.selectedDayFilter,
+  });
+
+  List<TimetableSlotModel> _getUniqueSlots(List<TimetableSlotModel> rawSlots) {
+    final Set<String> seen = {};
+    final List<TimetableSlotModel> unique = [];
+    for (final s in rawSlots) {
+      final key = '${s.lecturerId}_${s.courseId}_${s.day.name}_${s.startTime}_${s.endTime}';
+      if (!seen.contains(key)) {
+        seen.add(key);
+        unique.add(s);
+      }
+    }
+    return unique;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final uniqueSlots = _getUniqueSlots(slots);
+
+    // Get unique sorted time intervals (e.g. "09:00 - 10:30")
+    final uniqueKeys = uniqueSlots
+        .map((s) => '${s.startTime}_${s.endTime}')
+        .toSet()
+        .toList()
+      ..sort();
+    final List<MapEntry<String, String>> intervals = uniqueKeys.map((key) {
+      final parts = key.split('_');
+      return MapEntry(parts[0], parts[1]);
+    }).toList();
+
+    if (uniqueSlots.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.event_busy_outlined, size: 64, color: Colors.grey[300]),
+              const SizedBox(height: 16),
+              const Text(
+                'Tiada Rekod Ditemui',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final daysToShow = <DayOfWeek>[];
+    if (selectedDayFilter == 'Semua') {
+      daysToShow.addAll([
+        DayOfWeek.monday,
+        DayOfWeek.tuesday,
+        DayOfWeek.wednesday,
+        DayOfWeek.thursday,
+        DayOfWeek.friday,
+      ]);
+    } else {
+      final day = _parseDay(selectedDayFilter);
+      if (day != null) {
+        daysToShow.add(day);
+      }
+    }
+
+    const dayHeaders = {
+      DayOfWeek.monday: 'Isnin',
+      DayOfWeek.tuesday: 'Selasa',
+      DayOfWeek.wednesday: 'Rabu',
+      DayOfWeek.thursday: 'Khamis',
+      DayOfWeek.friday: 'Jumaat',
+    };
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        constraints: const BoxConstraints(
+          minWidth: 900,
+        ),
+        child: Table(
+          border: TableBorder.all(
+            color: const Color(0xFFE5E7EB),
+            width: 1,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          columnWidths: {
+            0: const FixedColumnWidth(120), // Time column
+            for (int i = 0; i < daysToShow.length; i++)
+              i + 1: const FlexColumnWidth(),
+          },
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          children: [
+            // Header Row
+            TableRow(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF3F4F6),
+              ),
+              children: [
+                const TableCell(
+                  child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Center(
+                      child: Text(
+                        'Masa',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF374151),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                for (final d in daysToShow)
+                  TableCell(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Center(
+                        child: Text(
+                          dayHeaders[d]!,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            // Data Rows
+            for (final interval in intervals)
+              TableRow(
+                children: [
+                  // Time Slot
+                  TableCell(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Center(
+                        child: Text(
+                          '${interval.key} - ${interval.value}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF4B5563),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Day Cells
+                  for (final d in daysToShow)
+                    TableCell(
+                      child: _buildCellContent(context, uniqueSlots, d, interval.key, interval.value),
+                    ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  DayOfWeek? _parseDay(String label) {
+    if (label == 'Isnin') return DayOfWeek.monday;
+    if (label == 'Selasa') return DayOfWeek.tuesday;
+    if (label == 'Rabu') return DayOfWeek.wednesday;
+    if (label == 'Khamis') return DayOfWeek.thursday;
+    if (label == 'Jumaat') return DayOfWeek.friday;
+    return null;
+  }
+
+  Widget _buildCellContent(BuildContext context, List<TimetableSlotModel> uniqueSlots, DayOfWeek day, String start, String end) {
+    final matchingSlots = uniqueSlots
+        .where((s) => s.day == day && s.startTime == start && s.endTime == end)
+        .toList();
+
+    if (matchingSlots.isEmpty) {
+      return const SizedBox(
+        height: 80,
+        child: Center(
+          child: Text(
+            '-',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: matchingSlots.map((slot) {
+        final course = courses.firstWhere(
+          (c) => c.id == slot.courseId,
+          orElse: () => CourseModel(
+            id: '',
+            code: slot.section.split('-').first,
+            name: slot.subject,
+            lecturerId: '',
+            lecturerName: '',
+            department: '',
+            sections: 1,
+          ),
+        );
+
+        final accentColor = _getAccentColor(slot.subject);
+
+        return Container(
+          margin: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(10),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: accentColor.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: accentColor.withOpacity(0.3), width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                course.code,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: accentColor,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                course.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(Icons.location_on_outlined, size: 12, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      slot.venue,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Icon(Icons.access_time_rounded, size: 12, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${slot.startTime} - ${slot.endTime}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Color _getAccentColor(String subject) {
+    const colors = [
+      Color(0xFF8B1538), // MARA Maroon
+      Color(0xFF0D9488), // Teal
+      Color(0xFF4F46E5), // Indigo
+      Color(0xFFEA580C), // Orange
+      Color(0xFF0891B2), // Cyan
+    ];
+    return colors[subject.length % colors.length];
+  }
 }

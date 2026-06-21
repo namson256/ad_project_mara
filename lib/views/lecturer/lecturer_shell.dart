@@ -127,53 +127,61 @@ class _LecturerShellState extends State<LecturerShell> with SingleTickerProvider
                     ),
                   ),
                 ),
-                const _SectionLabel(label: 'UMUM'),
-                _NavItem(
-                  icon: Icons.dashboard_outlined,
-                  label: 'Papan Pemuka',
-                  selected: widget.currentRoute == '/lecturer-dashboard',
-                  onTap: () => context.go('/lecturer-dashboard'),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const _SectionLabel(label: 'UMUM'),
+                        _NavItem(
+                          icon: Icons.dashboard_outlined,
+                          label: 'Papan Pemuka',
+                          selected: widget.currentRoute == '/lecturer-dashboard',
+                          onTap: () => context.go('/lecturer-dashboard'),
+                        ),
+                        const _SectionLabel(label: 'KEHADIRAN'),
+                        _NavItem(
+                          icon: Icons.fact_check_outlined,
+                          label: 'Tanda Kehadiran',
+                          selected: widget.currentRoute == '/lecturer-attendance',
+                          onTap: () => _navigateWithLoading('/lecturer-attendance'),
+                        ),
+                        const _SectionLabel(label: 'PELAPORAN'),
+                        _NavItem(
+                          icon: Icons.bar_chart_outlined,
+                          label: 'Modul Pelaporan',
+                          selected: widget.currentRoute == '/lecturer-pelaporan',
+                          onTap: () => context.go('/lecturer-pelaporan'),
+                        ),
+                        _NavItem(
+                          icon: Icons.warning_amber_outlined,
+                          label: 'Isu Disiplin',
+                          selected: widget.currentRoute == '/lecturer-isu-disiplin',
+                          onTap: () => context.go('/lecturer-isu-disiplin'),
+                        ),
+                        _NavItem(
+                          icon: Icons.notifications_outlined,
+                          label: 'Notifikasi',
+                          selected: widget.currentRoute == '/lecturer-pelaporan/notifikasi',
+                          onTap: () => context.go('/lecturer-pelaporan/notifikasi'),
+                        ),
+                        const _SectionLabel(label: 'JADUAL'),
+                        _NavItem(
+                          icon: Icons.calendar_month_outlined,
+                          label: 'Slot Jadual',
+                          selected: widget.currentRoute == '/lecturer-timetable',
+                          onTap: () => context.go('/lecturer-timetable'),
+                        ),
+                        _NavItem(
+                          icon: Icons.event_available_outlined,
+                          label: 'Tempahan',
+                          selected: widget.currentRoute == '/lecturer-booking',
+                          onTap: () => context.go('/lecturer-booking'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                const _SectionLabel(label: 'KEHADIRAN'),
-                _NavItem(
-                  icon: Icons.fact_check_outlined,
-                  label: 'Tanda Kehadiran',
-                  selected: widget.currentRoute == '/lecturer-attendance',
-                  onTap: () => _navigateWithLoading('/lecturer-attendance'),
-                ),
-                const _SectionLabel(label: 'PELAPORAN'),
-                _NavItem(
-                  icon: Icons.bar_chart_outlined,
-                  label: 'Modul Pelaporan',
-                  selected: widget.currentRoute == '/lecturer-pelaporan',
-                  onTap: () => context.go('/lecturer-pelaporan'),
-                ),
-                _NavItem(
-                  icon: Icons.warning_amber_outlined,
-                  label: 'Isu Disiplin',
-                  selected: widget.currentRoute == '/lecturer-isu-disiplin',
-                  onTap: () => context.go('/lecturer-isu-disiplin'),
-                ),
-                _NavItem(
-                  icon: Icons.notifications_outlined,
-                  label: 'Notifikasi',
-                  selected: widget.currentRoute == '/lecturer-pelaporan/notifikasi',
-                  onTap: () => context.go('/lecturer-pelaporan/notifikasi'),
-                ),
-                const _SectionLabel(label: 'JADUAL'),
-                _NavItem(
-                  icon: Icons.calendar_month_outlined,
-                  label: 'Slot Jadual',
-                  selected: widget.currentRoute == '/lecturer-timetable',
-                  onTap: () => context.go('/lecturer-timetable'),
-                ),
-                _NavItem(
-                  icon: Icons.event_available_outlined,
-                  label: 'Tempahan',
-                  selected: widget.currentRoute == '/lecturer-booking',
-                  onTap: () => context.go('/lecturer-booking'),
-                ),
-                const Spacer(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Container(

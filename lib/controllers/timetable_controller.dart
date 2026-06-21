@@ -55,17 +55,21 @@ class TimetableController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
   /// Returns an error message string on failure, null on success.
   Future<String?> addSlot(TimetableSlotModel slot) async {
+    // Check for exact duplicate: lecturer_id + course_id + day + start_time + end_time
+    final hasDuplicate = _slots.any((s) =>
+        s.lecturerId == slot.lecturerId &&
+        s.courseId == slot.courseId &&
+        s.day == slot.day &&
+        s.startTime == slot.startTime &&
+        s.endTime == slot.endTime);
+    if (hasDuplicate) {
+      return 'Rekod jadual telah wujud.';
+    }
+
     // Local conflict check before hitting Firestore
     final conflict = _findConflict(slot);
     if (conflict != null) {
-      final isVenueConflict = conflict.venue.trim().toLowerCase() == slot.venue.trim().toLowerCase();
-      if (isVenueConflict) {
-        return 'Konflik masa dengan "${conflict.subject}" '
-            '(${conflict.startTime}–${conflict.endTime}) di ${conflict.venue}';
-      } else {
-        return 'Konflik pensyarah: "${conflict.lecturerName}" sudah dijadualkan untuk "${conflict.subject}" '
-            '(${conflict.startTime}–${conflict.endTime})';
-      }
+      return 'Pertindihan Masa Dikesan.';
     }
 
     _setLoading(true);
@@ -86,16 +90,21 @@ class TimetableController extends ChangeNotifier {
   // Firestore — update
   // ---------------------------------------------------------------------------
   Future<String?> updateSlot(TimetableSlotModel updated) async {
+    // Check for exact duplicate: lecturer_id + course_id + day + start_time + end_time
+    final hasDuplicate = _slots.any((s) =>
+        s.id != updated.id &&
+        s.lecturerId == updated.lecturerId &&
+        s.courseId == updated.courseId &&
+        s.day == updated.day &&
+        s.startTime == updated.startTime &&
+        s.endTime == updated.endTime);
+    if (hasDuplicate) {
+      return 'Rekod jadual telah wujud.';
+    }
+
     final conflict = _findConflict(updated, excludeId: updated.id);
     if (conflict != null) {
-      final isVenueConflict = conflict.venue.trim().toLowerCase() == updated.venue.trim().toLowerCase();
-      if (isVenueConflict) {
-        return 'Konflik masa dengan "${conflict.subject}" '
-            '(${conflict.startTime}–${conflict.endTime})';
-      } else {
-        return 'Konflik pensyarah: "${conflict.lecturerName}" sudah dijadualkan untuk "${conflict.subject}" '
-            '(${conflict.startTime}–${conflict.endTime})';
-      }
+      return 'Pertindihan Masa Dikesan.';
     }
 
     _setLoading(true);
