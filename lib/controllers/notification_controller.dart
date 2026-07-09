@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import '../models/notification_model.dart';
+import '../models/user_model.dart';
 
 class NotificationController extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -19,6 +20,16 @@ class NotificationController extends ChangeNotifier {
   List<NotificationRecord> get items => List.unmodifiable(_items);
   bool get isLoading => _isLoading;
   String? get error => _error;
+
+  List<NotificationRecord> visibleForUser(String userId, UserRole role) {
+    if (role == UserRole.staff) {
+      return items;
+    }
+
+    if (userId.isEmpty) return [];
+
+    return items.where((n) => n.recipientIds.contains(userId)).toList();
+  }
 
   void _startListener() {
     _isLoading = true;

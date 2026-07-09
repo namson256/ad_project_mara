@@ -109,7 +109,7 @@ class AttendanceController extends ChangeNotifier {
         }).toList();
       }
     } catch (e) {
-      debugPrint("Error fetching attendance: \$e");
+      debugPrint("Error fetching attendance: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -121,12 +121,13 @@ class AttendanceController extends ChangeNotifier {
     String courseId,
     String studentId,
     int week,
-    AttendanceStatus status,
-    { // optional controller to handle discipline warnings
+    AttendanceStatus status, {
     DisciplineController? disciplineController,
     CourseModel? courseModel,
-  }
-   ) async {
+    String? actingLecturerId,
+    String? actingLecturerEmail,
+    String? actingLecturerName,
+  }) async {
     if (week < 1 || week > totalWeeks) return null;
 
     final students = _courseAttendance[courseId];
@@ -176,6 +177,9 @@ class AttendanceController extends ChangeNotifier {
             courseName: courseModel.name,
             attendancePercentage: pct,
             warningLevel: level,
+            actingLecturerId: actingLecturerId,
+            actingLecturerEmail: actingLecturerEmail,
+            actingLecturerName: actingLecturerName,
           );
           if (err != null) {
             debugPrint('Discipline warning write failed for $studentId in $courseId: $err');
@@ -189,7 +193,7 @@ class AttendanceController extends ChangeNotifier {
       }
       return null;
     } catch (e) {
-      debugPrint("Error saving attendance: \$e");
+      debugPrint("Error saving attendance: $e");
       return e.toString();
     }
   }
