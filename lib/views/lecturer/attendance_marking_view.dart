@@ -8,6 +8,8 @@ import '../../models/attendance_model.dart';
 import '../../models/course_model.dart';
 import 'lecturer_shell.dart';
 import '../../controllers/discipline_controller.dart';
+import '../../controllers/auth_controller.dart';
+import '../laporan/widgets/notification_banner.dart';
 
 class AttendanceMarkingView extends StatefulWidget {
   const AttendanceMarkingView({super.key});
@@ -637,6 +639,26 @@ class _AttendanceCell extends StatelessWidget {
     }
   }
 
+  void _showTopNotification(BuildContext context, String message, String type) {
+    late OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder: (_) => NotificationBanner(
+        message: message,
+        type: type,
+        onDismiss: () {
+          entry.remove();
+        },
+      ),
+    );
+
+    Overlay.of(context).insert(entry);
+
+    Future.delayed(const Duration(seconds: 3), () {
+      entry.remove();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isPast = week < currentWeek;
@@ -730,6 +752,8 @@ class _AttendanceCell extends StatelessWidget {
             final disciplineCtrl = context.read<DisciplineController>();
             final courseCtrl = context.read<CourseController>();
             final course = courseCtrl.courses.firstWhere((c) => c.id == courseId);
+            final authCtrl = context.read<AuthController>();
+            final lecturer = authCtrl.currentUser;
             final result = await context.read<AttendanceController>().updateStatus(
               courseId,
               studentId,
@@ -737,15 +761,22 @@ class _AttendanceCell extends StatelessWidget {
               value,
               disciplineController: disciplineCtrl,
               courseModel: course,
+              actingLecturerId: lecturer?.id,
+              actingLecturerEmail: lecturer?.email,
+              actingLecturerName: lecturer?.name,
             );
             // If a warning was created, show a SnackBar to the user immediately
             if (result == 'warning-created') {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Amaran kehadiran dikesan dan notifikasi telah dicipta.'), duration: Duration(seconds: 3)),
+              _showTopNotification(
+                context,
+                'Amaran kehadiran dikesan dan notifikasi telah dijana.',
+                'success',
               );
             } else if (result != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Gagal menyimpan kehadiran: $result'), backgroundColor: Colors.redAccent, duration: Duration(seconds: 4)),
+              _showTopNotification(
+                context,
+                'Gagal menyimpan kehadiran: $result',
+                'error',
               );
             }
           },

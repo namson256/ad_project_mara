@@ -200,7 +200,6 @@ class DisciplineController extends ChangeNotifier {
     notifyListeners();
     try {
       final autoId = 'auto_${studentId}_$courseId';
-      final title = 'Kehadiran Rendah (${attendancePercentage.toStringAsFixed(1)}%)';
       const severity = 'Tinggi';
       const status = 'Belum Selesai';
       const reportedBy = 'Sistem';
@@ -219,6 +218,8 @@ class DisciplineController extends ChangeNotifier {
           warningLabel = 'Amaran Ketiga';
       }
 
+      final title = '$warningLabel Kehadiran (${attendancePercentage.toStringAsFixed(1)}%)';
+
       debugPrint('Discipline: addOrUpdateAttendanceWarning start: student=$studentId course=$courseId pct=${attendancePercentage.toStringAsFixed(1)} level=$warningLevel');
 
       // Check for existing stored record
@@ -232,7 +233,7 @@ class DisciplineController extends ChangeNotifier {
           programme: programme,
           category: 'Isu Kehadiran',
           title: title,
-          description: 'Kehadiran dikesan pada ${attendancePercentage.toStringAsFixed(1)}% dalam kursus $courseCode ($courseName).',
+          description: 'Kehadiran pelajar telah mencapai ${attendancePercentage.toStringAsFixed(1)}%. Sistem telah menjana $warningLabel secara automatik bagi kursus $courseCode ($courseName).',
           reportedDate: DateTime.now(),
           severity: severity,
           status: status,
@@ -328,201 +329,123 @@ Unit Akademik
         'disciplineRecordId': autoId,
       };
 
+      // Check if a warning notification already exists for this student, course, and warning level
+      final dupSnap = await _db.collection('notifications')
+          .where('studentId', isEqualTo: studentId)
+          .where('courseId', isEqualTo: courseId)
+          .where('warningLevel', isEqualTo: warningLevel)
+          .limit(1)
+          .get();
+
+      if (dupSnap.docs.isNotEmpty) {
+        debugPrint('Discipline: Warning notification already exists for student=$studentId course=$courseId warningLevel=$warningLevel. Skipping.');
+        return null;
+      }
+
       // Determine recipients based on warning level
-      final List<String> recipientIds = [];
-      final List<String> recipientEmails = [];
+      final List<Map<String, String>> kpUsers = [];
+      final List<Map<String, String>> kjUsers = [];
+      final List<Map<String, String>> tpaUsers = [];
 
-      // track lecturerId so we can ensure inclusion later
-      String lecturerId = '';
+      final Map<String, String> userNames = {};
+      final Map<String, String> userEmails = {};
 
-      // 1) Lecturer of the course (if available in courses collection)
+      // 1) Add acting user if available
+      if (actingLecturerId != null && actingLecturerId.isNotEmpty) {
+        userNames[actingLecturerId] = actingLecturerName ?? '';
+        userEmails[actingLecturerId] = actingLecturerEmail ?? '';
+      }
+
+      // 2) Query all Ketua users (role == 'ketuaProgram') and categorize by jawatan
       try {
-        final courseDoc = await _db.collection('courses').doc(courseId).get();
-        if (courseDoc.exists) {
-          final cdata = courseDoc.data() ?? {};
-          final fetchedLecturerId = cdata['lecturerId'] as String? ?? '';
-          // Prefer acting lecturer (person who is logged in and changed attendance)
-          lecturerId = (actingLecturerId != null && actingLecturerId.isNotEmpty) ? actingLecturerId : fetchedLecturerId;
-          if (lecturerId.isNotEmpty) {
-            // If acting lecturer email provided and id matches acting id, prefer that email
-            String uemail = '';
-            if (actingLecturerId != null && actingLecturerId == lecturerId && actingLecturerEmail != null && actingLecturerEmail.isNotEmpty) {
-              uemail = actingLecturerEmail;
+        final snap = await _db.collection('users').where('role', isEqualTo: 'ketuaProgram').get();
+        for (final doc in snap.docs) {
+          final data = doc.data();
+          final email = data['email'] as String? ?? '';
+          final name = (data['name'] ?? data['displayName'] ?? data['fullName'] ?? '').toString();
+          final jawatan = data['jawatan'] as String? ?? '';
+          if (email.isNotEmpty) {
+            userNames[doc.id] = name;
+            userEmails[doc.id] = email;
+            
+            final userMap = {'id': doc.id, 'email': email, 'name': name};
+            if (jawatan == 'Ketua Jabatan') {
+              kjUsers.add(userMap);
+            } else if (jawatan == 'Timbalan Pengarah Akademik') {
+              tpaUsers.add(userMap);
             } else {
-              final udoc = await _db.collection('users').doc(lecturerId).get();
-              if (udoc.exists) {
-                final udata = udoc.data() ?? {};
-                uemail = udata['email'] as String? ?? '';
-              }
-            }
-            if (uemail.isNotEmpty) {
-              recipientIds.add(lecturerId);
-              recipientEmails.add(uemail);
+              kpUsers.add(userMap);
             }
           }
         }
       } catch (_) {}
 
-      // 2) Ketua Program (all users with role == 'ketuaProgram')
-      final List<String> ketuaProgramIds = [];
-      try {
-        final ketuaSnap = await _db.collection('users').where('role', isEqualTo: 'ketuaProgram').get();
-        for (final d in ketuaSnap.docs) {
-          final data = d.data();
-          final uemail = data['email'] as String? ?? '';
-          if (uemail.isNotEmpty && !recipientIds.contains(d.id)) {
-            recipientIds.add(d.id);
-            recipientEmails.add(uemail);
-            ketuaProgramIds.add(d.id);
+      // 3) Find course lecturer ID if acting lecturer is not provided or different
+      String lecturerId = '';
+      if (actingLecturerId != null && actingLecturerId.isNotEmpty) {
+        lecturerId = actingLecturerId;
+      } else {
+        try {
+          final courseDoc = await _db.collection('courses').doc(courseId).get();
+          if (courseDoc.exists) {
+            final cdata = courseDoc.data() ?? {};
+            lecturerId = cdata['lecturerId'] as String? ?? '';
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
 
-      // 3) Ketua Jabatan — look for users with 'jawatan' == 'Ketua Jabatan'
-      final List<String> kjIds = [];
-      try {
-        final kjSnap = await _db.collection('users').where('jawatan', isEqualTo: 'Ketua Jabatan').get();
-        for (final d in kjSnap.docs) {
-          final data = d.data();
-          final uemail = data['email'] as String? ?? '';
-          if (uemail.isNotEmpty && !recipientIds.contains(d.id)) {
-            recipientIds.add(d.id);
-            recipientEmails.add(uemail);
-            kjIds.add(d.id);
+      // Ensure we have name/email for this lecturerId
+      if (lecturerId.isNotEmpty && (!userEmails.containsKey(lecturerId) || userEmails[lecturerId]!.isEmpty)) {
+        try {
+          final udoc = await _db.collection('users').doc(lecturerId).get();
+          if (udoc.exists) {
+            final udata = udoc.data() ?? {};
+            userNames[lecturerId] = (udata['name'] ?? udata['displayName'] ?? udata['fullName'] ?? '').toString();
+            userEmails[lecturerId] = udata['email'] as String? ?? '';
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
 
-      // 4) Timbalan Pengarah Akademik — look for users with 'jawatan' == 'Timbalan Pengarah Akademik'
-      final List<String> tpaIds = [];
-      try {
-        final tpaSnap = await _db.collection('users').where('jawatan', isEqualTo: 'Timbalan Pengarah Akademik').get();
-        for (final d in tpaSnap.docs) {
-          final data = d.data();
-          final uemail = data['email'] as String? ?? '';
-          if (uemail.isNotEmpty && !recipientIds.contains(d.id)) {
-            recipientIds.add(d.id);
-            recipientEmails.add(uemail);
-            tpaIds.add(d.id);
-          }
-        }
-      } catch (_) {}
-
-      // Trim recipients according to warning level: 1 -> lecturer + ketuaProgram
-      // 2 -> + Ketua Jabatan, 3 -> + Timbalan Pengarah Akademik
+      // 4) Build final recipient list dynamically per warning level
       final List<String> finalRecipientIds = [];
       final List<String> finalRecipientEmails = [];
+      final List<String> finalRecipientNames = [];
 
-      for (var i = 0; i < recipientIds.length; i++) {
-        final id = recipientIds[i];
-        final emailAddr = recipientEmails[i];
-        if (warningLevel == 1) {
-          if (i == 0 || ketuaProgramIds.contains(id)) {
-            finalRecipientIds.add(id);
-            finalRecipientEmails.add(emailAddr);
-          }
-        } else if (warningLevel == 2) {
-          // include lecturer (index 0), ketuaProgram (collected), and ketua jabatan
-          if (i == 0 || ketuaProgramIds.contains(id) || kjIds.contains(id)) {
-            finalRecipientIds.add(id);
-            finalRecipientEmails.add(emailAddr);
-          }
-        } else {
-          // level 3: include all collected
+      void addRecipient(String id) {
+        final email = userEmails[id] ?? '';
+        final name = userNames[id] ?? '';
+        if (id.isNotEmpty && email.isNotEmpty && !finalRecipientIds.contains(id)) {
           finalRecipientIds.add(id);
-          finalRecipientEmails.add(emailAddr);
+          finalRecipientEmails.add(email);
+          finalRecipientNames.add(name.isNotEmpty ? name : email);
         }
       }
 
-      // Ensure lecturer (acting lecturer) and ketuaProgram recipients are present for warningLevel >= 1
+      // Add lecturer (always added)
+      if (lecturerId.isNotEmpty) {
+        addRecipient(lecturerId);
+      }
+
+      // Add Ketua Program (always added for warningLevel >= 1)
       if (warningLevel >= 1) {
-        if (lecturerId.isNotEmpty && !finalRecipientIds.contains(lecturerId)) {
-          // try to find lecturer email from recipientEmails, otherwise fetch
-          var idx = recipientIds.indexOf(lecturerId);
-          String lecEmail = '';
-          if (idx != -1) lecEmail = recipientEmails[idx];
-          // If acting lecturer email provided, use it
-          if (actingLecturerId != null && actingLecturerId == lecturerId && actingLecturerEmail != null && actingLecturerEmail.isNotEmpty) {
-            lecEmail = actingLecturerEmail;
-          }
-          if (lecEmail.isEmpty) {
-            try {
-              final doc = await _db.collection('users').doc(lecturerId).get();
-              if (doc.exists) lecEmail = (doc.data() ?? {})['email'] as String? ?? '';
-            } catch (_) {}
-          }
-          finalRecipientIds.insert(0, lecturerId);
-          finalRecipientEmails.insert(0, lecEmail);
-        }
-
-        for (final kp in ketuaProgramIds) {
-          if (!finalRecipientIds.contains(kp)) {
-            var idx = recipientIds.indexOf(kp);
-            String kpEmail = '';
-            if (idx != -1) kpEmail = recipientEmails[idx];
-            if (kpEmail.isEmpty) {
-              try {
-                final doc = await _db.collection('users').doc(kp).get();
-                if (doc.exists) kpEmail = (doc.data() ?? {})['email'] as String? ?? '';
-              } catch (_) {}
-            }
-            finalRecipientIds.add(kp);
-            finalRecipientEmails.add(kpEmail);
-          }
+        for (final user in kpUsers) {
+          addRecipient(user['id']!);
         }
       }
 
-      // Ensure finalRecipientEmails aligns with finalRecipientIds by resolving any missing emails.
-      final Map<String, String> idToEmail = { for (var i = 0; i < recipientIds.length; i++) recipientIds[i]: recipientEmails[i] };
-      final List<String> resolvedFinalEmails = [];
-      for (final id in finalRecipientIds) {
-        String emailAddr = idToEmail[id] ?? '';
-        if (emailAddr.isEmpty && id.isNotEmpty) {
-          try {
-            final doc = await _db.collection('users').doc(id).get();
-            if (doc.exists) {
-              emailAddr = (doc.data() ?? {})['email'] as String? ?? '';
-            }
-          } catch (_) {
-            // ignore
-          }
+      // Add Ketua Jabatan (added for warningLevel >= 2)
+      if (warningLevel >= 2) {
+        for (final user in kjUsers) {
+          addRecipient(user['id']!);
         }
-        // If still empty, skip adding an empty entry to keep recipients clean
-        if (emailAddr.isNotEmpty) resolvedFinalEmails.add(emailAddr);
       }
 
-      // Replace finalRecipientEmails with resolved list (keeps order matching finalRecipientIds but only includes addresses we could resolve)
-      finalRecipientEmails.clear();
-      finalRecipientEmails.addAll(resolvedFinalEmails);
-
-      debugPrint('Discipline: final recipients ids=${finalRecipientIds.join(",")} emails=${finalRecipientEmails.join(",")}');
-
-       // Resolve recipient display names for notification UI. If name not found, fall back to email or id.
-       final List<String> finalRecipientNames = [];
-       for (var i = 0; i < finalRecipientIds.length; i++) {
-         final id = finalRecipientIds[i];
-         String displayName = '';
-         try {
-           if (id.isNotEmpty) {
-             final udoc = await _db.collection('users').doc(id).get();
-             if (udoc.exists) {
-               final udata = udoc.data() ?? {};
-               displayName = (udata['displayName'] ?? udata['name'] ?? udata['fullName'] ?? udata['email'] ?? '').toString();
-             }
-           }
-         } catch (_) {
-           // ignore
-         }
-         if (displayName.isEmpty) {
-           // fallback to email if available, otherwise keep id
-           if (i < finalRecipientEmails.length && finalRecipientEmails[i].isNotEmpty) {
-             displayName = finalRecipientEmails[i];
-           } else {
-             displayName = id;
-           }
-         }
-         finalRecipientNames.add(displayName);
-       }
+      // Add Timbalan Pengarah Akademik (added for warningLevel >= 3)
+      if (warningLevel >= 3) {
+        for (final user in tpaUsers) {
+          addRecipient(user['id']!);
+        }
+      }
 
       // Update notification and email records with recipients
       final notifWithRecipients = Map<String, dynamic>.from(notif);

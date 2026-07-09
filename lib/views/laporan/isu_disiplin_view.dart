@@ -9,6 +9,7 @@ import '../../models/discipline_record_model.dart';
 import '../admin/admin_shell.dart';
 import '../lecturer/lecturer_shell.dart';
 import '../ketua/ketua_shell.dart';
+import 'widgets/notification_banner.dart';
 
 class IsuDisiplinView extends StatefulWidget {
   const IsuDisiplinView({super.key});
@@ -52,7 +53,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
     _overlayEntry = null;
 
     final entry = OverlayEntry(
-      builder: (_) => _NotificationBanner(
+      builder: (_) => NotificationBanner(
         message: message,
         type: type,
         onDismiss: () {
@@ -66,7 +67,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
     if (overlay != null) overlay.insert(entry);
     _overlayEntry = entry;
 
-    Future.delayed(const Duration(seconds: 4), () {
+    Future.delayed(const Duration(seconds: 3), () {
       if (_overlayEntry == entry) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -373,9 +374,9 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                 onChanged: (newStatus) async {
                   final err = await discCtrl.updateStatus(r.id, newStatus);
                   if (err != null) {
-                    _showTopNotification('Gagal mengemas kini status.', 'error');
+                    _showTopNotification('Gagal mengemas kini rekod.', 'error');
                   } else {
-                    _showTopNotification('Rekod disiplin berjaya dikemas kini.', 'success');
+                    _showTopNotification('Rekod berjaya dikemas kini.', 'success');
                     setState(() {});
                   }
                 },
@@ -509,9 +510,9 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
       final updated = r.copyWith(catatan: notesCtrl.text.trim());
       final err = await discCtrl.updateRecord(updated);
       if (err != null) {
-        _showTopNotification('Gagal menyimpan rekod.', 'error');
+        _showTopNotification('Gagal mengemas kini rekod.', 'error');
       } else {
-        _showTopNotification('Rekod disiplin berjaya dikemas kini.', 'success');
+        _showTopNotification('Rekod berjaya dikemas kini.', 'success');
         setState(() {});
       }
     }
@@ -538,9 +539,9 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
       final discCtrl = context.read<DisciplineController>();
       final err = await discCtrl.deleteRecord(r.id);
       if (err != null) {
-        _showTopNotification('Gagal memproses padam rekod.', 'error');
+        _showTopNotification('Gagal memadam rekod.', 'error');
       } else {
-        _showTopNotification('Rekod disiplin berjaya dipadam.', 'success');
+        _showTopNotification('Rekod berjaya dipadam.', 'success');
         setState(() {});
       }
     }
@@ -711,11 +712,11 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
                     }
 
                     if (err != null) {
-                      _showTopNotification('Gagal menyimpan rekod.', 'error');
+                      _showTopNotification('Gagal mengemas kini rekod.', 'error');
                       Navigator.pop(ctx, false);
                     } else {
                       _showTopNotification(
-                        isEdit ? 'Rekod disiplin berjaya dikemas kini.' : 'Rekod disiplin berjaya ditambah.',
+                        isEdit ? 'Rekod berjaya dikemas kini.' : 'Rekod berjaya ditambah.',
                         'success',
                       );
                       Navigator.pop(ctx, true);
@@ -843,105 +844,6 @@ class _InlineStatusDropdownState extends State<InlineStatusDropdown> {
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             color: const Color(0xFF374151),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NotificationBanner extends StatefulWidget {
-  final String message;
-  final String type;
-  final VoidCallback onDismiss;
-  const _NotificationBanner({required this.message, required this.type, required this.onDismiss});
-
-  @override
-  State<_NotificationBanner> createState() => _NotificationBannerState();
-}
-
-class _NotificationBannerState extends State<_NotificationBanner> with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final Animation<double> _slide;
-  late final Animation<double> _fade;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    _slide = Tween<double>(begin: -80, end: 0).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
-    _fade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
-    _ctrl.forward();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isSuccess = widget.type == 'success';
-
-    return Positioned(
-      top: 24,
-      left: 0,
-      right: 0,
-      child: AnimatedBuilder(
-        animation: _ctrl,
-        builder: (ctx, child) {
-          return Opacity(
-            opacity: _fade.value,
-            child: Transform.translate(
-              offset: Offset(0, _slide.value),
-              child: child,
-            ),
-          );
-        },
-        child: Center(
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 600),
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              decoration: BoxDecoration(
-                color: isSuccess ? const Color(0xFFDEF7EC) : const Color(0xFFFDE8E8),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: isSuccess ? const Color(0xFFBCF0DA) : const Color(0xFFFBD5D5)),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.10), blurRadius: 20, offset: const Offset(0, 6))],
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    isSuccess ? Icons.check_circle_rounded : Icons.error_rounded,
-                    color: isSuccess ? const Color(0xFF03543F) : const Color(0xFF9B1C1C),
-                    size: 22,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      widget.message,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: isSuccess ? const Color(0xFF03543F) : const Color(0xFF9B1C1C),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: widget.onDismiss,
-                    child: Icon(
-                      Icons.close,
-                      size: 16,
-                      color: isSuccess ? const Color(0xFF03543F) : const Color(0xFF9B1C1C),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ),
       ),
