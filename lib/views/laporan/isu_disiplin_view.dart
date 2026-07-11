@@ -161,7 +161,7 @@ class _IsuDisiplinViewState extends State<IsuDisiplinView> {
           ElevatedButton.icon(
             onPressed: () => setState(() => _onlyLowAttendance = !_onlyLowAttendance),
             icon: Icon(_onlyLowAttendance ? Icons.filter_alt_off_outlined : Icons.filter_alt_outlined),
-            label: const Text('Kesan Kehadiran < 80%'),
+            label: const Text('Amaran Kehadiran Automatik'),
           ),
           if (!isReadOnly) ...[
             const SizedBox(width: 12),
